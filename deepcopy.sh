@@ -5,14 +5,14 @@
 src=""
 dst=""
 
-subdir="deep"
-parent="hell"
+subdir="stats"
+parent="/BAND/ADNI/FS_Data/"
 
-for X in ./test*
+for X in $parent*
 do
 	dir="$X/$subdir"
 	#src="$src $dir"
-	dst="$parent/$X"
+	dst="./$parent/$X"
 
 	mkdir -p "$dst"
 	cp -r "$dir" "$dst"
