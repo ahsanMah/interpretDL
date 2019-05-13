@@ -1,0 +1,521 @@
+,ScanId,PTID,EXAMDATE.x,VISCODE,DX_bl,AGE,PTGENDER,PTEDUCAT,PTETHCAT,PTRACCAT,PTMARRY,CDRSB,MMSE
+78,S156236,003_S_2374,5/16/12,m12,EMCI,81.3,Female,18,Not Hisp/Latino,White,Never married,0.5,29
+302,S177586,005_S_4910,12/13/12,m03,AD,81.4,Female,15,Not Hisp/Latino,White,Married,NA,NA
+303,S185876,005_S_4910,4/3/13,m06,AD,81.4,Female,15,Not Hisp/Latino,White,Married,10,19
+481,S168567,005_S_4910,9/21/12,bl,AD,81.4,Female,15,Not Hisp/Latino,White,Married,7,25
+359,S177601,005_S_5038,12/13/12,bl,AD,81.5,Male,18,Not Hisp/Latino,White,Married,5,25
+360,S184500,005_S_5038,3/14/13,m03,AD,81.5,Male,18,Not Hisp/Latino,White,Married,NA,NA
+361,S191604,005_S_5038,6/5/13,m06,AD,81.5,Male,18,Not Hisp/Latino,White,Married,9,21
+362,S209945,005_S_5038,1/9/14,m12,AD,81.5,Male,18,Not Hisp/Latino,White,Married,8,24
+390,S193388,005_S_5119,6/25/13,m03,AD,77,Female,12,Not Hisp/Latino,White,Married,NA,NA
+391,S217193,005_S_5119,4/22/14,m12,AD,77,Female,12,Not Hisp/Latino,White,Married,10,18
+489,S185458,005_S_5119,3/28/13,bl,AD,77,Female,12,Not Hisp/Latino,White,Married,8,23
+24,S204437,007_S_2106,10/21/13,m36,EMCI,77.5,Male,12,Not Hisp/Latino,White,Married,3,25
+80,S157440,007_S_2394,7/12/12,m12,EMCI,67.4,Male,20,Not Hisp/Latino,White,Married,0.5,30
+81,S194967,007_S_2394,7/15/13,m24,EMCI,67.4,Male,20,Not Hisp/Latino,White,Married,0.5,30
+82,S418884,007_S_2394,7/13/15,m48,EMCI,67.4,Male,20,Not Hisp/Latino,White,Married,0.5,29
+129,S148744,007_S_4272,4/30/12,m06,EMCI,70.9,Male,12,Not Hisp/Latino,White,Married,1.5,25
+130,S171689,007_S_4272,10/22/12,m12,EMCI,70.9,Male,12,Not Hisp/Latino,White,Married,2,25
+131,S204969,007_S_4272,10/28/13,m24,EMCI,70.9,Male,12,Not Hisp/Latino,White,Married,1.5,25
+149,S142629,007_S_4387,3/5/12,m03,CN,76.1,Female,16,Not Hisp/Latino,White,Married,NA,NA
+150,S180549,007_S_4387,1/21/13,m12,CN,76.1,Female,16,Not Hisp/Latino,White,Married,0,30
+151,S214038,007_S_4387,12/2/13,m24,CN,76.1,Female,16,Not Hisp/Latino,White,Married,0,28
+152,S404468,007_S_4387,12/7/15,m48,CN,76.1,Female,16,Not Hisp/Latino,White,Married,0,29
+163,S148556,007_S_4467,4/27/12,m03,EMCI,61.9,Female,12,Not Hisp/Latino,White,Married,NA,NA
+164,S158986,007_S_4467,7/30/12,m06,EMCI,61.9,Female,12,Not Hisp/Latino,White,Married,0.5,27
+165,S182610,007_S_4467,2/18/13,m12,EMCI,61.9,Female,12,Not Hisp/Latino,White,Married,1,26
+166,S162302,007_S_4488,8/22/12,m06,CN,72.6,Male,18,Not Hisp/Latino,White,Married,0,28
+167,S182383,007_S_4488,2/14/13,m12,CN,72.6,Male,18,Not Hisp/Latino,White,Married,0,29
+168,S381525,007_S_4488,2/22/16,m48,CN,72.6,Male,18,Not Hisp/Latino,White,Married,0,30
+176,S150318,007_S_4516,5/14/12,m03,CN,71.4,Male,20,Not Hisp/Latino,White,Married,NA,NA
+177,S162673,007_S_4516,8/27/12,m06,CN,71.4,Male,20,Not Hisp/Latino,White,Married,0,26
+178,S212726,007_S_4516,2/17/14,m24,CN,71.4,Male,20,Not Hisp/Latino,White,Married,0,28
+179,S375372,007_S_4516,2/15/16,m48,CN,71.4,Male,20,Not Hisp/Latino,White,Married,0,30
+184,S142283,007_S_4568,3/1/12,bl,AD,70.7,Female,16,Not Hisp/Latino,White,Married,3,23
+185,S189309,007_S_4568,5/13/13,m12,AD,70.7,Female,16,Not Hisp/Latino,White,Married,4,21
+186,S214857,007_S_4568,3/27/14,m24,AD,70.7,Female,16,Not Hisp/Latino,White,Married,4,19
+195,S170135,007_S_4611,10/8/12,m06,LMCI,66.9,Male,18,Not Hisp/Latino,White,Divorced,1.5,24
+196,S185590,007_S_4611,4/1/13,m12,LMCI,66.9,Male,18,Not Hisp/Latino,White,Divorced,2.5,26
+197,S218934,007_S_4611,5/19/14,m24,LMCI,66.9,Male,18,Not Hisp/Latino,White,Divorced,1.5,24
+198,S430734,007_S_4611,4/26/16,m48,LMCI,66.9,Male,18,Not Hisp/Latino,White,Divorced,2.5,25
+199,S156792,007_S_4620,7/5/12,m03,CN,77.1,Male,19,Not Hisp/Latino,White,Married,NA,NA
+200,S169277,007_S_4620,10/1/12,m06,CN,77.1,Male,19,Not Hisp/Latino,White,Married,0,29
+201,S186971,007_S_4620,4/15/13,m12,CN,77.1,Male,19,Not Hisp/Latino,White,Married,0,29
+202,S216772,007_S_4620,4/22/14,m24,CN,77.1,Male,19,Not Hisp/Latino,White,Married,0,30
+203,S430769,007_S_4620,3/28/16,m48,CN,77.1,Male,19,Not Hisp/Latino,White,Married,0,28
+469,S144969,007_S_4620,3/28/12,bl,CN,77.1,Male,19,Not Hisp/Latino,White,Married,0,30
+212,S146546,007_S_4637,4/5/12,bl,CN,70.8,Female,18,Not Hisp/Latino,White,Married,0,29
+213,S155015,007_S_4637,6/22/12,m03,CN,70.8,Female,18,Not Hisp/Latino,White,Married,NA,NA
+214,S172488,007_S_4637,10/29/12,m06,CN,70.8,Female,18,Not Hisp/Latino,White,Married,0,30
+215,S187561,007_S_4637,4/22/13,m12,CN,70.8,Female,18,Not Hisp/Latino,White,Married,0,29
+216,S217951,007_S_4637,5/5/14,m24,CN,70.8,Female,18,Not Hisp/Latino,White,Married,0,30
+217,S430719,007_S_4637,4/25/16,m48,CN,70.8,Female,18,Not Hisp/Latino,White,Married,0,29
+304,S185575,007_S_4911,4/1/13,m06,AD,74.5,Male,20,Not Hisp/Latino,White,Married,7,24
+305,S203119,007_S_4911,10/7/13,m12,AD,74.5,Male,20,Not Hisp/Latino,White,Married,7,22
+482,S164221,007_S_4911,8/30/12,bl,AD,74.5,Male,20,Not Hisp/Latino,White,Married,4.5,21
+405,S192130,007_S_5196,6/3/13,bl,AD,72.8,Female,18,Not Hisp/Latino,White,Married,2.5,21
+406,S200721,007_S_5196,9/13/13,m03,AD,72.8,Female,18,Not Hisp/Latino,White,Married,NA,NA
+412,S418908,007_S_5265,8/25/15,m24,SMC,75.1,Female,18,Not Hisp/Latino,White,Never married,0,28
+495,S196975,007_S_5265,7/30/13,bl,SMC,75.1,Female,18,Not Hisp/Latino,White,Never married,0,30
+1,S102587,016_S_2007,3/24/11,m12,EMCI,83.4,Female,20,Hisp/Latino,White,Widowed,2.5,29
+2,S144811,016_S_2007,3/26/12,m24,EMCI,83.4,Female,20,Hisp/Latino,White,Widowed,0.5,30
+3,S91484,016_S_2007,8/30/10,m03,EMCI,83.4,Female,20,Hisp/Latino,White,Widowed,NA,NA
+440,S88071,016_S_2007,6/17/10,bl,EMCI,83.4,Female,20,Hisp/Latino,White,Widowed,2.5,29
+4,S115518,016_S_2031,7/19/11,m12,EMCI,72.5,Male,16,Not Hisp/Latino,White,Married,2,27
+5,S158377,016_S_2031,7/23/12,m24,EMCI,72.5,Male,16,Not Hisp/Latino,White,Married,1.5,29
+6,S196375,016_S_2031,7/22/13,m36,EMCI,72.5,Male,16,Not Hisp/Latino,White,Married,2,28
+7,S94738,016_S_2031,11/10/10,m03,EMCI,72.5,Male,16,Not Hisp/Latino,White,Married,NA,NA
+441,S90388,016_S_2031,8/11/10,bl,EMCI,72.5,Male,16,Not Hisp/Latino,White,Married,2,27
+69,S108292,016_S_2284,5/5/11,m03,EMCI,76.6,Male,16,Hisp/Latino,White,Married,NA,NA
+70,S122088,016_S_2284,9/8/11,m12,EMCI,76.6,Male,16,Hisp/Latino,White,Married,1,29
+90,S112088,016_S_4009,6/18/11,bl,AD,90.3,Male,17,Hisp/Latino,White,Married,8,24
+91,S192598,016_S_4009,6/17/13,m24,AD,90.3,Male,17,Hisp/Latino,White,Married,10,25
+422,S158219,016_S_4009,7/18/12,m12,AD,90.3,Male,17,Hisp/Latino,White,Married,9,24
+101,S124956,016_S_4097,10/4/11,m03,CN,70.8,Female,16,Hisp/Latino,White,Divorced,NA,NA
+102,S137416,016_S_4097,1/18/12,m06,CN,70.8,Female,16,Hisp/Latino,White,Divorced,0,30
+455,S113791,016_S_4097,7/5/11,bl,CN,70.8,Female,16,Hisp/Latino,White,Divorced,0,30
+103,S125430,016_S_4121,10/13/11,m03,CN,89,Male,16,Not Hisp/Latino,White,Widowed,NA,NA
+104,S138301,016_S_4121,1/23/12,m06,CN,89,Male,16,Not Hisp/Latino,White,Widowed,0,28
+105,S160931,016_S_4121,8/13/12,m12,CN,89,Male,16,Not Hisp/Latino,White,Widowed,0,29
+106,S197486,016_S_4121,8/8/13,m24,CN,89,Male,16,Not Hisp/Latino,White,Widowed,0,27
+107,S281277,016_S_4121,9/21/15,m48,CN,89,Male,16,Not Hisp/Latino,White,Widowed,0.5,23
+456,S115572,016_S_4121,7/15/11,bl,CN,89,Male,16,Not Hisp/Latino,White,Widowed,0,27
+146,S145695,016_S_4353,3/31/12,m03,AD,55.6,Female,16,Not Hisp/Latino,White,Married,NA,NA
+504,S130361,016_S_4353,11/18/11,bl,AD,55.6,Female,16,Not Hisp/Latino,White,Married,4.5,26
+187,S153419,016_S_4584,6/5/12,m03,LMCI,78.3,Female,16,Not Hisp/Latino,White,Married,NA,NA
+188,S172678,016_S_4584,10/29/12,m06,LMCI,78.3,Female,16,Not Hisp/Latino,White,Married,1,28
+189,S186912,016_S_4584,4/13/13,m12,LMCI,78.3,Female,16,Not Hisp/Latino,White,Married,1,26
+466,S144848,016_S_4584,3/27/12,bl,LMCI,78.3,Female,16,Not Hisp/Latino,White,Married,0.5,27
+191,S154152,016_S_4591,6/14/12,m03,AD,65.9,Female,13,Not Hisp/Latino,White,Married,NA,NA
+192,S170150,016_S_4591,10/4/12,m06,AD,65.9,Female,13,Not Hisp/Latino,White,Married,4.5,26
+193,S185716,016_S_4591,4/1/13,m12,AD,65.9,Female,13,Not Hisp/Latino,White,Married,4.5,28
+467,S144582,016_S_4591,3/22/12,bl,AD,65.9,Female,13,Not Hisp/Latino,White,Married,4,23
+194,S158610,016_S_4601,7/25/12,m03,EMCI,72.8,Male,16,Hisp/Latino,White,Married,NA,NA
+468,S145638,016_S_4601,4/2/12,bl,EMCI,72.8,Male,16,Hisp/Latino,White,Married,1,29
+218,S162181,016_S_4638,8/21/12,m03,CN,74,Male,17,Hisp/Latino,White,Divorced,NA,NA
+219,S181334,016_S_4638,2/1/13,m06,CN,74,Male,17,Hisp/Latino,White,Divorced,0.5,29
+220,S199776,016_S_4638,9/4/13,m12,CN,74,Male,17,Hisp/Latino,White,Divorced,0,29
+221,S150048,016_S_4646,5/10/12,bl,LMCI,60.8,Female,16,Not Hisp/Latino,White,Married,1,30
+222,S161034,016_S_4646,8/14/12,m03,LMCI,60.8,Female,16,Not Hisp/Latino,White,Married,NA,NA
+223,S175988,016_S_4646,11/29/12,m06,LMCI,60.8,Female,16,Not Hisp/Latino,White,Married,1,29
+224,S189462,016_S_4646,5/14/13,m12,LMCI,60.8,Female,16,Not Hisp/Latino,White,Married,2,27
+225,S221925,016_S_4646,6/10/14,m24,LMCI,60.8,Female,16,Not Hisp/Latino,White,Married,2,27
+234,S166985,016_S_4688,9/11/12,m03,CN,81.7,Female,14,Hisp/Latino,White,Widowed,NA,NA
+235,S182493,016_S_4688,2/13/13,m06,CN,81.7,Female,14,Hisp/Latino,White,Widowed,0,29
+472,S153813,016_S_4688,6/11/12,bl,CN,81.7,Female,14,Hisp/Latino,White,Widowed,0,30
+281,S175094,016_S_4887,11/19/12,m03,AD,73.8,Male,12,Hisp/Latino,White,Divorced,NA,NA
+282,S188469,016_S_4887,4/30/13,m06,AD,73.8,Male,12,Hisp/Latino,White,Divorced,4.5,25
+283,S202829,016_S_4887,10/1/13,m12,AD,73.8,Male,12,Hisp/Latino,White,Divorced,4.5,24
+479,S162208,016_S_4887,8/21/12,bl,AD,73.8,Male,12,Hisp/Latino,White,Divorced,4.5,26
+293,S173861,016_S_4902,11/7/12,m03,LMCI,75.3,Female,15,Hisp/Latino,White,Divorced,NA,NA
+294,S184237,016_S_4902,3/12/13,m06,LMCI,75.3,Female,15,Hisp/Latino,White,Divorced,2,23
+295,S200269,016_S_4902,9/10/13,m12,LMCI,75.3,Female,15,Hisp/Latino,White,Divorced,3.5,25
+296,S231046,016_S_4902,9/15/14,m24,LMCI,75.3,Female,15,Hisp/Latino,White,Divorced,4.5,23
+297,S410097,016_S_4902,12/18/15,m36,LMCI,75.3,Female,15,Hisp/Latino,White,Divorced,5,23
+480,S162233,016_S_4902,8/21/12,bl,LMCI,75.3,Female,15,Hisp/Latino,White,Divorced,1.5,25
+330,S189606,016_S_4951,5/15/13,m06,CN,71.9,Female,14,Hisp/Latino,White,Widowed,0,30
+331,S206048,016_S_4951,11/13/13,m12,CN,71.9,Female,14,Hisp/Latino,White,Widowed,0.5,30
+332,S326190,016_S_4951,12/2/15,m36,CN,71.9,Female,14,Hisp/Latino,White,Widowed,0.5,30
+483,S169341,016_S_4951,10/1/12,bl,CN,71.9,Female,14,Hisp/Latino,White,Widowed,0,29
+333,S178871,016_S_4952,1/3/13,m03,CN,69.3,Female,12,Hisp/Latino,White,Married,NA,NA
+334,S189582,016_S_4952,5/15/13,m06,CN,69.3,Female,12,Hisp/Latino,White,Married,0.5,30
+335,S206038,016_S_4952,11/13/13,m12,CN,69.3,Female,12,Hisp/Latino,White,Married,0.5,30
+336,S326252,016_S_4952,12/2/15,m36,CN,69.3,Female,12,Hisp/Latino,White,Married,0.5,30
+484,S169416,016_S_4952,10/1/12,bl,CN,69.3,Female,12,Hisp/Latino,White,Married,0,28
+353,S184219,016_S_5007,3/11/13,m03,EMCI,71.5,Male,14,Hisp/Latino,White,Married,NA,NA
+354,S201163,016_S_5007,9/16/13,m06,EMCI,71.5,Male,14,Hisp/Latino,White,Married,1.5,28
+355,S250074,016_S_5007,2/23/15,m24,EMCI,71.5,Male,14,Hisp/Latino,White,Married,3,29
+509,S176279,016_S_5007,12/3/12,bl,EMCI,71.5,Male,14,Hisp/Latino,White,Married,1,27
+356,S216958,016_S_5031,4/23/14,m12,EMCI,80.2,Female,14,Hisp/Latino,White,Married,2,26
+435,S257563,016_S_5031,5/4/15,m24,EMCI,80.2,Female,14,Hisp/Latino,White,Married,5.5,23
+510,S182507,016_S_5031,2/13/13,bl,EMCI,80.2,Female,14,Hisp/Latino,White,Married,2,25
+357,S199725,016_S_5032,8/29/13,m06,AD,77.5,Female,11,Not Hisp/Latino,More than one,Married,5,23
+358,S210764,016_S_5032,1/20/14,m12,AD,77.5,Female,11,Not Hisp/Latino,More than one,Married,7,20
+511,S175944,016_S_5032,11/29/12,bl,AD,77.5,Female,11,Not Hisp/Latino,More than one,Married,4.5,23
+363,S190959,016_S_5057,5/29/13,m03,AD,75.2,Male,16,Not Hisp/Latino,White,Married,NA,NA
+364,S216871,016_S_5057,4/22/14,m12,AD,75.2,Male,16,Not Hisp/Latino,White,Married,1,28
+512,S183091,016_S_5057,2/25/13,bl,AD,75.2,Male,16,Not Hisp/Latino,White,Married,1,26
+16,S171210,021_S_2077,10/17/12,m24,EMCI,81,Male,20,Not Hisp/Latino,White,Married,0.5,29
+17,S234311,021_S_2077,10/21/14,m48,EMCI,81,Male,20,Not Hisp/Latino,White,Married,0.5,28
+18,S96175,021_S_2077,12/8/10,m03,EMCI,81,Male,20,Not Hisp/Latino,White,Married,NA,NA
+443,S91931,021_S_2077,9/9/10,bl,EMCI,81,Male,20,Not Hisp/Latino,White,Married,0.5,28
+21,S103125,021_S_2100,4/4/11,m06,EMCI,87.8,Female,13,Not Hisp/Latino,White,Widowed,1,29
+22,S234107,021_S_2100,10/20/14,m48,EMCI,87.8,Female,13,Not Hisp/Latino,White,Widowed,1.5,27
+23,S97609,021_S_2100,1/13/11,m03,EMCI,87.8,Female,13,Not Hisp/Latino,White,Widowed,NA,NA
+445,S92816,021_S_2100,9/28/10,bl,EMCI,87.8,Female,13,Not Hisp/Latino,White,Widowed,1,25
+25,S107693,021_S_2124,5/3/11,m06,EMCI,82.3,Female,15,Not Hisp/Latino,White,Married,1,26
+26,S98001,021_S_2124,1/19/11,m03,EMCI,82.3,Female,15,Not Hisp/Latino,White,Married,NA,NA
+446,S93429,021_S_2124,10/15/10,bl,EMCI,82.3,Female,15,Not Hisp/Latino,White,Married,1,29
+27,S126210,021_S_2125,10/24/11,m12,EMCI,78.1,Female,17,Not Hisp/Latino,White,Married,0.5,28
+28,S171953,021_S_2125,10/24/12,m24,EMCI,78.1,Female,17,Not Hisp/Latino,White,Married,0.5,29
+29,S93368,021_S_2125,10/13/10,bl,EMCI,78.1,Female,17,Not Hisp/Latino,White,Married,0.5,28
+30,S98043,021_S_2125,1/21/11,m03,EMCI,78.1,Female,17,Not Hisp/Latino,White,Married,NA,NA
+31,S173734,021_S_2142,11/7/12,m24,EMCI,82.7,Female,12,Not Hisp/Latino,White,Widowed,2,24
+447,S93658,021_S_2142,10/22/10,bl,EMCI,82.7,Female,12,Not Hisp/Latino,White,Widowed,0.5,26
+32,S107393,021_S_2150,5/2/11,m06,EMCI,72.7,Male,14,Not Hisp/Latino,White,Married,0.5,27
+33,S94011,021_S_2150,11/1/10,bl,EMCI,72.7,Male,14,Not Hisp/Latino,White,Married,0.5,26
+123,S134538,021_S_4245,12/21/11,m03,EMCI,73.6,Male,19,Not Hisp/Latino,Asian,Married,NA,NA
+124,S170015,021_S_4245,10/8/12,m12,EMCI,73.6,Male,19,Not Hisp/Latino,Asian,Married,3.5,26
+125,S333738,021_S_4245,11/12/15,m48,EMCI,73.6,Male,19,Not Hisp/Latino,Asian,Married,5,27
+460,S123116,021_S_4245,9/22/11,bl,EMCI,73.6,Male,19,Not Hisp/Latino,Asian,Married,1.5,26
+126,S133984,021_S_4254,12/19/11,m03,CN,85.9,Female,12,Not Hisp/Latino,White,Widowed,NA,NA
+127,S169501,021_S_4254,10/3/12,m12,CN,85.9,Female,12,Not Hisp/Latino,White,Widowed,0,27
+128,S282437,021_S_4254,10/1/15,m48,CN,85.9,Female,12,Not Hisp/Latino,White,Widowed,0,26
+461,S123446,021_S_4254,9/26/11,bl,CN,85.9,Female,12,Not Hisp/Latino,White,Widowed,0,26
+135,S171658,021_S_4276,10/22/12,m12,CN,73.9,Female,12,Not Hisp/Latino,White,Married,0,30
+136,S287974,021_S_4276,10/14/15,m48,CN,73.9,Female,12,Not Hisp/Latino,White,Married,0,30
+144,S174599,021_S_4335,11/14/12,m12,CN,71.7,Female,15,Not Hisp/Latino,White,Married,0,28
+145,S303132,021_S_4335,11/9/15,m48,CN,71.7,Female,15,Not Hisp/Latino,White,Married,0,30
+153,S143622,021_S_4402,3/12/12,m03,LMCI,72.9,Female,12,Not Hisp/Latino,White,Widowed,NA,NA
+154,S158919,021_S_4402,7/30/12,m06,LMCI,72.9,Female,12,Not Hisp/Latino,White,Widowed,4,25
+155,S182255,021_S_4402,2/13/13,m12,LMCI,72.9,Female,12,Not Hisp/Latino,White,Widowed,5,23
+156,S209834,021_S_4402,1/6/14,m24,LMCI,72.9,Female,12,Not Hisp/Latino,White,Widowed,7,18
+157,S158118,021_S_4421,7/19/12,m06,CN,75.1,Female,14,Not Hisp/Latino,White,Married,0,29
+158,S209838,021_S_4421,1/7/14,m24,CN,75.1,Female,14,Not Hisp/Latino,White,Married,0,28
+505,S134203,021_S_4421,12/20/11,bl,CN,75.1,Female,14,Not Hisp/Latino,White,Married,0,26
+230,S157662,021_S_4659,7/16/12,m03,EMCI,85.9,Male,17,Not Hisp/Latino,White,Widowed,NA,NA
+231,S172547,021_S_4659,10/29/12,m06,EMCI,85.9,Male,17,Not Hisp/Latino,White,Widowed,1.5,26
+232,S216476,021_S_4659,4/17/14,m24,EMCI,85.9,Male,17,Not Hisp/Latino,White,Widowed,2,27
+233,S434390,021_S_4659,5/4/16,m48,EMCI,85.9,Male,17,Not Hisp/Latino,White,Widowed,4.5,23
+236,S150666,021_S_4718,5/16/12,bl,AD,78.5,Male,12,Not Hisp/Latino,White,Married,6,20
+237,S176127,021_S_4718,12/3/12,m06,AD,78.5,Male,12,Not Hisp/Latino,White,Married,8,15
+238,S190173,021_S_4718,5/21/13,m12,AD,78.5,Male,12,Not Hisp/Latino,White,Married,10,16
+244,S162740,021_S_4744,8/27/12,m03,EMCI,72.3,Female,12,Not Hisp/Latino,White,Married,NA,NA
+245,S176362,021_S_4744,12/4/12,m06,EMCI,72.3,Female,12,Not Hisp/Latino,White,Married,0.5,28
+246,S191223,021_S_4744,6/3/13,m12,EMCI,72.3,Female,12,Not Hisp/Latino,White,Married,0.5,30
+247,S221821,021_S_4744,6/10/14,m24,EMCI,72.3,Female,12,Not Hisp/Latino,White,Married,0.5,26
+248,S465258,021_S_4744,6/14/16,m48,EMCI,72.3,Female,12,Not Hisp/Latino,White,Married,0.5,26
+263,S171822,021_S_4857,10/23/12,m03,LMCI,68.3,Male,16,Not Hisp/Latino,White,Married,NA,NA
+264,S226235,021_S_4857,7/23/14,m24,LMCI,68.3,Male,16,Not Hisp/Latino,White,Married,6,26
+476,S158483,021_S_4857,7/24/12,bl,LMCI,68.3,Male,16,Not Hisp/Latino,White,Married,3,27
+379,S214758,021_S_5099,3/24/14,m12,EMCI,61.6,Female,16,Not Hisp/Latino,White,Married,2.5,27
+380,S250579,021_S_5099,3/3/15,m24,EMCI,61.6,Female,16,Not Hisp/Latino,White,Married,2.5,25
+411,S267016,021_S_5236,7/24/15,m24,SMC,85.3,Male,16,Not Hisp/Latino,White,Married,0,28
+520,S202530,021_S_5236,9/30/13,m03,SMC,85.3,Male,16,Not Hisp/Latino,White,Married,NA,NA
+34,S178627,027_S_2183,12/23/12,m24,EMCI,83,Male,18,Not Hisp/Latino,White,Married,3,25
+35,S208554,027_S_2183,12/18/13,m36,EMCI,83,Male,18,Not Hisp/Latino,White,Married,2,27
+515,S245816,027_S_2183,1/21/15,m48,EMCI,83,Male,18,Not Hisp/Latino,White,Married,2,30
+516,S355067,027_S_2183,1/19/16,m60,EMCI,83,Male,18,Not Hisp/Latino,White,Married,2.5,23
+48,S100964,027_S_2219,3/3/11,m03,EMCI,74.3,Male,18,Not Hisp/Latino,White,Married,NA,NA
+49,S108541,027_S_2219,5/9/11,m06,EMCI,74.3,Male,18,Not Hisp/Latino,White,Married,NA,30
+50,S132057,027_S_2219,12/6/11,m12,EMCI,74.3,Male,18,Not Hisp/Latino,White,Married,2,29
+51,S178705,027_S_2219,12/28/12,m24,EMCI,74.3,Male,18,Not Hisp/Latino,White,Married,1,29
+52,S209489,027_S_2219,12/27/13,m36,EMCI,74.3,Male,18,Not Hisp/Latino,White,Married,1,29
+53,S244530,027_S_2219,1/7/15,m48,EMCI,74.3,Male,18,Not Hisp/Latino,White,Married,1,28
+54,S96031,027_S_2219,12/7/10,bl,EMCI,74.3,Male,18,Not Hisp/Latino,White,Married,1,29
+59,S102030,027_S_2245,3/19/11,m03,EMCI,57,Female,20,Not Hisp/Latino,White,Divorced,NA,NA
+60,S110933,027_S_2245,6/6/11,m06,EMCI,57,Female,20,Not Hisp/Latino,White,Divorced,1,30
+61,S180570,027_S_2245,1/22/13,m24,EMCI,57,Female,20,Not Hisp/Latino,White,Divorced,1,29
+62,S210105,027_S_2245,1/13/14,m36,EMCI,57,Female,20,Not Hisp/Latino,White,Divorced,0.5,28
+63,S245044,027_S_2245,1/15/15,m48,EMCI,57,Female,20,Not Hisp/Latino,White,Divorced,0.5,30
+419,S377798,027_S_2245,2/18/16,m60,EMCI,57,Female,20,Not Hisp/Latino,White,Divorced,0.5,30
+501,S96495,027_S_2245,12/14/10,bl,EMCI,57,Female,20,Not Hisp/Latino,White,Divorced,1,28
+71,S126508,027_S_2336,10/25/11,m06,EMCI,72.9,Female,12,Not Hisp/Latino,White,Married,1,30
+72,S144906,027_S_2336,3/26/12,m12,EMCI,72.9,Female,12,Not Hisp/Latino,White,Married,1,29
+73,S217062,027_S_2336,4/25/14,m36,EMCI,72.9,Female,12,Not Hisp/Latino,White,Married,1,26
+74,S255661,027_S_2336,4/14/15,m48,EMCI,72.9,Female,12,Not Hisp/Latino,White,Married,2.5,26
+420,S188579,027_S_2336,5/2/13,m24,EMCI,72.9,Female,12,Not Hisp/Latino,White,Married,1,28
+421,S480167,027_S_2336,6/30/16,m60,EMCI,72.9,Female,12,Not Hisp/Latino,White,Married,3,28
+449,S102041,027_S_2336,3/20/11,bl,EMCI,72.9,Female,12,Not Hisp/Latino,White,Married,1,30
+239,S160565,027_S_4729,8/11/12,m03,LMCI,77.8,Female,19,Not Hisp/Latino,White,Married,NA,NA
+240,S177629,027_S_4729,12/13/12,m06,LMCI,77.8,Female,19,Not Hisp/Latino,White,Married,2.5,25
+241,S190084,027_S_4729,5/20/13,m12,LMCI,77.8,Female,19,Not Hisp/Latino,White,Married,3.5,26
+242,S222288,027_S_4729,6/16/14,m24,LMCI,77.8,Female,19,Not Hisp/Latino,White,Married,4,24
+473,S151452,027_S_4729,5/22/12,bl,LMCI,77.8,Female,19,Not Hisp/Latino,White,Married,2.5,27
+249,S180501,027_S_4801,1/18/13,m06,AD,77.7,Male,16,Not Hisp/Latino,White,Married,4.5,21
+250,S196156,027_S_4801,7/23/13,m12,AD,77.7,Male,16,Not Hisp/Latino,White,Married,5,17
+251,S158231,027_S_4802,7/22/12,bl,AD,83.2,Male,19,Not Hisp/Latino,White,Married,4.5,26
+252,S179812,027_S_4802,1/10/13,m06,AD,83.2,Male,19,Not Hisp/Latino,White,Married,5,24
+253,S195324,027_S_4802,7/16/13,m12,AD,83.2,Male,19,Not Hisp/Latino,White,Married,5,22
+254,S157708,027_S_4804,7/16/12,bl,LMCI,79.4,Male,16,Not Hisp/Latino,White,Widowed,1.5,29
+255,S172928,027_S_4804,11/1/12,m03,LMCI,79.4,Male,16,Not Hisp/Latino,White,Widowed,NA,NA
+256,S180581,027_S_4804,1/22/13,m06,LMCI,79.4,Male,16,Not Hisp/Latino,White,Widowed,2,28
+257,S195989,027_S_4804,7/22/13,m12,LMCI,79.4,Male,16,Not Hisp/Latino,White,Widowed,2,29
+268,S175327,027_S_4869,11/20/12,m03,LMCI,77.2,Male,19,Not Hisp/Latino,White,Married,NA,NA
+269,S187463,027_S_4869,4/18/13,m06,LMCI,77.2,Male,19,Not Hisp/Latino,White,Married,3,30
+270,S201041,027_S_4869,9/17/13,m12,LMCI,77.2,Male,19,Not Hisp/Latino,White,Married,1.5,30
+271,S232253,027_S_4869,9/30/14,m24,LMCI,77.2,Male,19,Not Hisp/Latino,White,Married,1.5,29
+478,S161648,027_S_4869,8/19/12,bl,LMCI,77.2,Male,19,Not Hisp/Latino,White,Married,1.5,29
+272,S160383,027_S_4873,8/8/12,bl,LMCI,82.6,Male,12,Not Hisp/Latino,White,Married,3,26
+273,S174473,027_S_4873,11/13/12,m03,LMCI,82.6,Male,12,Not Hisp/Latino,White,Married,NA,NA
+274,S183008,027_S_4873,2/25/13,m06,LMCI,82.6,Male,12,Not Hisp/Latino,White,Married,3.5,24
+275,S209516,027_S_4873,12/30/13,m12,LMCI,82.6,Male,12,Not Hisp/Latino,White,Married,3.5,21
+276,S227542,027_S_4873,8/14/14,m24,LMCI,82.6,Male,12,Not Hisp/Latino,White,Married,2.5,22
+306,S176382,027_S_4919,12/4/12,m03,EMCI,74.8,Female,19,Not Hisp/Latino,White,Married,NA,NA
+307,S184991,027_S_4919,3/21/13,m06,EMCI,74.8,Female,19,Not Hisp/Latino,White,Married,2,28
+308,S202226,027_S_4919,9/26/13,m12,EMCI,74.8,Female,19,Not Hisp/Latino,White,Married,2,30
+309,S230551,027_S_4919,9/9/14,m24,EMCI,74.8,Female,19,Not Hisp/Latino,White,Married,2,28
+432,S333223,027_S_4919,12/17/15,m36,EMCI,74.8,Female,19,Not Hisp/Latino,White,Married,1.5,26
+310,S178049,027_S_4926,12/18/12,m03,EMCI,62.5,Male,18,Not Hisp/Latino,White,Married,NA,NA
+311,S184479,027_S_4926,3/14/13,m06,EMCI,62.5,Male,18,Not Hisp/Latino,White,Married,2,30
+312,S234671,027_S_4926,10/24/14,m24,EMCI,62.5,Male,18,Not Hisp/Latino,White,Married,1,29
+433,S203578,027_S_4926,10/9/13,m12,EMCI,62.5,Male,18,Not Hisp/Latino,White,Married,2,29
+434,S311432,027_S_4926,11/19/15,m36,EMCI,62.5,Male,18,Not Hisp/Latino,White,Married,0.5,30
+313,S178577,027_S_4936,12/21/12,m03,LMCI,78.1,Male,19,Not Hisp/Latino,White,Married,NA,NA
+314,S186302,027_S_4936,4/9/13,m06,LMCI,78.1,Male,19,Not Hisp/Latino,White,Married,3.5,24
+315,S200938,027_S_4936,9/16/13,m12,LMCI,78.1,Male,19,Not Hisp/Latino,White,Married,3.5,26
+316,S231398,027_S_4936,9/19/14,m24,LMCI,78.1,Male,19,Not Hisp/Latino,White,Married,4.5,22
+317,S178645,027_S_4938,12/26/12,m03,AD,70.9,Male,16,Not Hisp/Latino,White,Married,NA,NA
+318,S185594,027_S_4938,4/1/13,m06,AD,70.9,Male,16,Not Hisp/Latino,White,Married,5,24
+319,S203766,027_S_4938,10/14/13,m12,AD,70.9,Male,16,Not Hisp/Latino,White,Married,5,23
+320,S178169,027_S_4943,12/19/12,m03,LMCI,76.1,Male,20,Not Hisp/Latino,White,Married,NA,NA
+337,S180446,027_S_4955,1/17/13,m03,LMCI,71.4,Male,16,Not Hisp/Latino,White,Married,NA,NA
+338,S188685,027_S_4955,5/6/13,m06,LMCI,71.4,Male,16,Not Hisp/Latino,White,Married,2.5,25
+339,S204386,027_S_4955,10/21/13,m12,LMCI,71.4,Male,16,Not Hisp/Latino,White,Married,2.5,22
+344,S179672,027_S_4962,1/8/13,m03,AD,80.1,Female,18,Not Hisp/Latino,White,Married,NA,NA
+345,S186759,027_S_4962,4/11/13,m06,AD,80.1,Female,18,Not Hisp/Latino,White,Married,3.5,22
+346,S203512,027_S_4962,10/8/13,m12,AD,80.1,Female,18,Not Hisp/Latino,White,Married,4.5,21
+347,S180395,027_S_4964,1/16/13,m03,AD,80.9,Male,16,Not Hisp/Latino,White,Married,NA,NA
+348,S187766,027_S_4964,4/23/13,m06,AD,80.9,Male,16,Not Hisp/Latino,White,Married,7,23
+349,S203555,027_S_4964,10/8/13,m12,AD,80.9,Male,16,Not Hisp/Latino,White,Married,7,22
+350,S178914,027_S_4966,1/6/13,m03,EMCI,61.7,Male,16,Not Hisp/Latino,White,Married,NA,NA
+351,S187984,027_S_4966,4/25/13,m06,EMCI,61.7,Male,16,Not Hisp/Latino,White,Married,1,30
+352,S204287,027_S_4966,10/19/13,m12,EMCI,61.7,Male,16,Not Hisp/Latino,White,Married,1,30
+368,S182235,027_S_5079,2/12/13,bl,SMC,73.2,Male,18,Not Hisp/Latino,White,Married,0.5,29
+369,S189821,027_S_5079,5/16/13,m03,SMC,73.2,Male,18,Not Hisp/Latino,White,Married,NA,NA
+370,S200313,027_S_5079,9/10/13,m06,SMC,73.2,Male,18,Not Hisp/Latino,White,Married,1.5,29
+371,S214695,027_S_5079,3/25/14,m12,SMC,73.2,Male,18,Not Hisp/Latino,White,Married,0.5,29
+436,S252640,027_S_5079,3/19/15,m24,SMC,73.2,Male,18,Not Hisp/Latino,White,Married,0,29
+372,S190168,027_S_5083,5/21/13,m03,SMC,73.7,Male,16,Not Hisp/Latino,White,Married,NA,NA
+373,S215155,027_S_5083,4/1/14,m12,SMC,73.7,Male,16,Not Hisp/Latino,White,Married,0,28
+374,S252883,027_S_5083,3/25/15,m24,SMC,73.7,Male,16,Not Hisp/Latino,White,Married,0,29
+485,S182860,027_S_5083,2/21/13,bl,SMC,73.7,Male,16,Not Hisp/Latino,White,Married,0,28
+375,S191803,027_S_5093,6/7/13,m03,SMC,69.3,Female,19,Not Hisp/Latino,White,Married,NA,NA
+376,S200675,027_S_5093,9/12/13,m06,SMC,69.3,Female,19,Not Hisp/Latino,White,Married,0.5,30
+377,S214184,027_S_5093,3/17/14,m12,SMC,69.3,Female,19,Not Hisp/Latino,White,Married,0,29
+378,S251222,027_S_5093,3/12/15,m24,SMC,69.3,Female,19,Not Hisp/Latino,White,Married,0,30
+486,S183314,027_S_5093,2/27/13,bl,SMC,69.3,Female,19,Not Hisp/Latino,White,Married,0.5,30
+381,S202453,027_S_5109,9/30/13,m06,SMC,78.4,Male,14,Not Hisp/Latino,White,Married,0,28
+382,S217138,027_S_5109,4/25/14,m12,SMC,78.4,Male,14,Not Hisp/Latino,White,Married,0,27
+383,S265864,027_S_5109,6/24/13,m03,SMC,78.4,Male,14,Not Hisp/Latino,White,Married,NA,NA
+437,S259433,027_S_5109,5/13/15,m24,SMC,78.4,Male,14,Not Hisp/Latino,White,Married,0,28
+487,S185226,027_S_5109,3/25/13,bl,SMC,78.4,Male,14,Not Hisp/Latino,White,Married,0,27
+384,S193582,027_S_5110,6/27/13,m03,SMC,68.8,Female,14,Not Hisp/Latino,White,Married,NA,NA
+385,S217315,027_S_5110,4/29/14,m12,SMC,68.8,Female,14,Not Hisp/Latino,White,Married,1,26
+386,S259790,027_S_5110,5/14/15,m24,SMC,68.8,Female,14,Not Hisp/Latino,White,Married,0.5,27
+488,S184798,027_S_5110,3/20/13,bl,SMC,68.8,Female,14,Not Hisp/Latino,White,Married,0.5,25
+387,S192442,027_S_5118,6/14/13,m03,SMC,68.2,Female,20,Not Hisp/Latino,White,Widowed,NA,NA
+388,S216741,027_S_5118,4/22/14,m12,SMC,68.2,Female,20,Not Hisp/Latino,White,Widowed,0.5,30
+389,S260799,027_S_5118,5/20/15,m24,SMC,68.2,Female,20,Not Hisp/Latino,White,Widowed,0.5,30
+392,S186178,027_S_5127,4/8/13,bl,SMC,76.3,Female,19,Not Hisp/Latino,White,Married,0.5,29
+393,S194224,027_S_5127,7/8/13,m03,SMC,76.3,Female,19,Not Hisp/Latino,White,Married,NA,NA
+394,S217448,027_S_5127,4/30/14,m12,SMC,76.3,Female,19,Not Hisp/Latino,White,Married,0.5,30
+395,S261518,027_S_5127,5/27/15,m24,SMC,76.3,Female,19,Not Hisp/Latino,White,Married,0.5,30
+399,S190359,027_S_5169,5/22/13,bl,SMC,65.7,Female,18,Not Hisp/Latino,White,Widowed,0,30
+400,S199503,027_S_5169,8/27/13,m03,SMC,65.7,Female,18,Not Hisp/Latino,White,Widowed,NA,NA
+401,S262116,027_S_5169,6/5/15,m24,SMC,65.7,Female,18,Not Hisp/Latino,White,Widowed,0,30
+402,S190376,027_S_5170,5/23/13,bl,SMC,76.9,Male,20,Not Hisp/Latino,White,Married,0.5,30
+403,S200279,027_S_5170,9/3/13,m03,SMC,76.9,Male,20,Not Hisp/Latino,White,Married,NA,NA
+404,S339326,027_S_5170,8/27/15,m24,SMC,76.9,Male,20,Not Hisp/Latino,White,Married,0.5,30
+407,S191817,027_S_5197,6/9/13,bl,SMC,78.9,Female,18,Not Hisp/Latino,White,Married,0,30
+408,S201661,027_S_5197,9/19/13,m03,SMC,78.9,Female,18,Not Hisp/Latino,White,Married,NA,NA
+492,S263944,027_S_5197,6/23/15,m24,SMC,78.9,Female,18,Not Hisp/Latino,White,Married,0,27
+413,S198496,027_S_5277,8/20/13,bl,SMC,71.8,Female,15,Not Hisp/Latino,White,Widowed,0.5,28
+438,S271319,027_S_5277,9/2/15,m24,SMC,71.8,Female,15,Not Hisp/Latino,White,Widowed,0.5,24
+414,S201419,027_S_5288,9/18/13,bl,SMC,81.9,Female,18,Not Hisp/Latino,White,Never married,0,30
+439,S283053,027_S_5288,10/5/15,m24,SMC,81.9,Female,18,Not Hisp/Latino,White,Never married,0,30
+79,S195478,029_S_2376,7/15/13,m24,EMCI,81.9,Male,17,Not Hisp/Latino,White,Married,1,29
+83,S197880,029_S_2395,8/13/13,m24,EMCI,72.6,Male,19,Not Hisp/Latino,White,Married,1,30
+137,S180847,029_S_4279,1/18/13,m12,CN,83.7,Male,16,Not Hisp/Latino,Asian,Married,0,30
+426,S216918,029_S_4279,4/21/14,m24,CN,83.7,Male,16,Not Hisp/Latino,Asian,Married,0,30
+141,S206151,029_S_4290,11/13/13,m24,CN,73.5,Male,20,Not Hisp/Latino,White,Married,0,29
+142,S182539,029_S_4307,2/14/13,m12,AD,78.5,Male,16,Not Hisp/Latino,White,Married,7,18
+143,S179931,029_S_4327,1/9/13,m12,EMCI,82.9,Male,12,Not Hisp/Latino,White,Divorced,1.5,25
+148,S182549,029_S_4384,2/14/13,m12,CN,62.3,Male,18,Not Hisp/Latino,Am Indian/Alaskan,Never married,0,29
+519,S216970,029_S_4384,4/23/14,m24,CN,62.3,Male,18,Not Hisp/Latino,Am Indian/Alaskan,Never married,0,30
+427,S216944,029_S_4385,4/22/14,m24,CN,68.2,Female,12,Not Hisp/Latino,White,Married,1,26
+190,S190389,029_S_4585,5/22/13,m12,CN,65.3,Male,13,Not Hisp/Latino,White,Married,0,29
+229,S192896,029_S_4652,6/5/13,m12,CN,79.3,Male,20,Not Hisp/Latino,Asian,Married,0,27
+396,S197161,029_S_5135,8/1/13,m03,EMCI,77,Male,16,Not Hisp/Latino,White,Married,NA,NA
+490,S188029,029_S_5135,4/24/13,bl,EMCI,77,Male,16,Not Hisp/Latino,White,Married,0.5,28
+397,S202376,029_S_5158,9/26/13,m03,SMC,74.1,Female,19,Not Hisp/Latino,White,Married,NA,NA
+514,S193185,029_S_5158,6/21/13,bl,SMC,74.1,Female,19,Not Hisp/Latino,White,Married,0,30
+398,S198770,029_S_5166,8/20/13,m03,SMC,65.1,Female,20,Not Hisp/Latino,White,Never married,NA,NA
+491,S190414,029_S_5166,5/22/13,bl,SMC,65.1,Female,20,Not Hisp/Latino,White,Never married,0,29
+410,S202152,029_S_5219,9/25/13,m03,SMC,75.7,Male,16,Not Hisp/Latino,White,Married,NA,NA
+494,S193440,029_S_5219,6/25/13,bl,SMC,75.7,Male,16,Not Hisp/Latino,White,Married,0,24
+64,S108816,052_S_2249,5/10/11,m03,EMCI,75.8,Male,15,Not Hisp/Latino,White,Married,NA,NA
+65,S114221,052_S_2249,7/11/11,m06,EMCI,75.8,Male,15,Not Hisp/Latino,White,Married,0.5,30
+66,S135060,052_S_2249,12/30/11,m12,EMCI,75.8,Male,15,Not Hisp/Latino,White,Married,0.5,29
+67,S179343,052_S_2249,1/7/13,m24,EMCI,75.8,Male,15,Not Hisp/Latino,White,Married,1.5,30
+68,S244922,052_S_2249,1/12/15,m48,EMCI,75.8,Male,15,Not Hisp/Latino,White,Married,1,30
+502,S96518,052_S_2249,12/14/10,bl,EMCI,75.8,Male,15,Not Hisp/Latino,White,Married,1,28
+204,S146347,052_S_4626,4/3/12,bl,LMCI,69.2,Male,18,Not Hisp/Latino,White,Married,1,29
+205,S158739,052_S_4626,7/27/12,m03,LMCI,69.2,Male,18,Not Hisp/Latino,White,Married,NA,NA
+206,S172557,052_S_4626,10/29/12,m06,LMCI,69.2,Male,18,Not Hisp/Latino,White,Married,0.5,29
+207,S191664,052_S_4626,4/29/13,m12,LMCI,69.2,Male,18,Not Hisp/Latino,White,Married,0.5,29
+208,S218723,052_S_4626,5/16/14,m24,LMCI,69.2,Male,18,Not Hisp/Latino,White,Married,0.5,27
+209,S255860,052_S_4626,4/15/15,m36,LMCI,69.2,Male,18,Not Hisp/Latino,White,Married,0,30
+258,S171784,052_S_4807,10/19/12,m03,LMCI,72,Female,16,Not Hisp/Latino,White,Married,NA,NA
+259,S182453,052_S_4807,2/15/13,m06,LMCI,72,Female,16,Not Hisp/Latino,White,Married,2,27
+260,S197833,052_S_4807,8/13/13,m12,LMCI,72,Female,16,Not Hisp/Latino,White,Married,2,27
+261,S227075,052_S_4807,8/7/14,m24,LMCI,72,Female,16,Not Hisp/Latino,White,Married,1.5,28
+262,S268215,052_S_4807,8/4/15,m36,LMCI,72,Female,16,Not Hisp/Latino,White,Married,5.5,25
+475,S158743,052_S_4807,7/27/12,bl,LMCI,72,Female,16,Not Hisp/Latino,White,Married,2.5,29
+277,S162351,052_S_4885,8/10/12,bl,LMCI,75,Male,20,Not Hisp/Latino,White,Married,2,29
+278,S174181,052_S_4885,11/12/12,m03,LMCI,75,Male,20,Not Hisp/Latino,White,Married,NA,NA
+279,S183629,052_S_4885,3/4/13,m06,LMCI,75,Male,20,Not Hisp/Latino,White,Married,2.5,29
+280,S228511,052_S_4885,8/22/14,m24,LMCI,75,Male,20,Not Hisp/Latino,White,Married,3.5,27
+431,S200360,052_S_4885,9/11/13,m12,LMCI,75,Male,20,Not Hisp/Latino,White,Married,2.5,30
+321,S187415,052_S_4944,4/19/13,m03,EMCI,68,Male,14,Not Hisp/Latino,White,Married,NA,NA
+322,S194410,052_S_4944,7/10/13,m06,EMCI,68,Male,14,Not Hisp/Latino,White,Married,1,28
+323,S211672,052_S_4944,1/31/14,m12,EMCI,68,Male,14,Not Hisp/Latino,White,Married,1,25
+324,S244983,052_S_4944,1/14/15,m24,EMCI,68,Male,14,Not Hisp/Latino,White,Married,1,27
+325,S369512,052_S_4944,2/5/16,m36,EMCI,68,Male,14,Not Hisp/Latino,White,Married,3,30
+507,S171590,052_S_4944,10/19/12,bl,EMCI,68,Male,14,Not Hisp/Latino,White,Married,0.5,29
+326,S187399,052_S_4945,4/2/13,m03,LMCI,56.5,Male,12,Not Hisp/Latino,White,Married,NA,NA
+327,S194385,052_S_4945,7/8/13,m06,LMCI,56.5,Male,12,Not Hisp/Latino,White,Married,3,28
+328,S210328,052_S_4945,1/17/14,m12,LMCI,56.5,Male,12,Not Hisp/Latino,White,Married,3.5,30
+329,S244628,052_S_4945,1/7/15,m24,LMCI,56.5,Male,12,Not Hisp/Latino,White,Married,5,23
+508,S172164,052_S_4945,10/24/12,bl,LMCI,56.5,Male,12,Not Hisp/Latino,White,Married,2,27
+340,S183645,052_S_4959,3/4/13,bl,AD,77.5,Male,20,Not Hisp/Latino,White,Married,5,25
+341,S191689,052_S_4959,6/5/13,m03,AD,77.5,Male,20,Not Hisp/Latino,White,Married,NA,NA
+342,S201443,052_S_4959,9/18/13,m06,AD,77.5,Male,20,Not Hisp/Latino,White,Married,5,26
+343,S214399,052_S_4959,3/18/14,m12,AD,77.5,Male,20,Not Hisp/Latino,White,Married,5,26
+365,S192190,052_S_5062,6/12/13,m03,AD,71,Female,14,Not Hisp/Latino,White,Married,NA,NA
+366,S202504,052_S_5062,9/30/13,m06,AD,71,Female,14,Not Hisp/Latino,White,Married,5,25
+367,S216761,052_S_5062,4/22/14,m12,AD,71,Female,14,Not Hisp/Latino,White,Married,5,22
+513,S181107,052_S_5062,1/25/13,bl,AD,71,Female,14,Not Hisp/Latino,White,Married,2.5,26
+84,S138258,057_S_2398,1/12/12,m06,EMCI,71.5,Male,13,Not Hisp/Latino,White,Married,2,28
+85,S158400,057_S_2398,7/24/12,m12,EMCI,71.5,Male,13,Not Hisp/Latino,White,Married,4,26
+86,S196217,057_S_2398,7/23/13,m24,EMCI,71.5,Male,13,Not Hisp/Latino,White,Married,8,24
+284,S159517,057_S_4888,8/3/12,bl,LMCI,74.8,Male,12,Not Hisp/Latino,White,Married,2.5,25
+285,S173940,057_S_4888,11/9/12,m03,LMCI,74.8,Male,12,Not Hisp/Latino,White,Married,NA,NA
+286,S182370,057_S_4888,2/14/13,m06,LMCI,74.8,Male,12,Not Hisp/Latino,White,Married,3,23
+287,S198436,057_S_4888,8/20/13,m12,LMCI,74.8,Male,12,Not Hisp/Latino,White,Married,3.5,22
+288,S227314,057_S_4888,8/12/14,m24,LMCI,74.8,Male,12,Not Hisp/Latino,White,Married,6,19
+289,S160599,057_S_4897,8/13/12,bl,EMCI,75.8,Female,11,Not Hisp/Latino,White,Married,1.5,29
+290,S176887,057_S_4897,12/10/12,m03,EMCI,75.8,Female,11,Not Hisp/Latino,White,Married,NA,NA
+291,S183140,057_S_4897,2/26/13,m06,EMCI,75.8,Female,11,Not Hisp/Latino,White,Married,1,28
+292,S199577,057_S_4897,8/28/13,m12,EMCI,75.8,Female,11,Not Hisp/Latino,White,Married,2,27
+298,S162548,057_S_4909,8/23/12,bl,LMCI,78.2,Female,11,Not Hisp/Latino,White,Married,3,25
+299,S175812,057_S_4909,11/29/12,m03,LMCI,78.2,Female,11,Not Hisp/Latino,White,Married,NA,NA
+300,S183876,057_S_4909,3/7/13,m06,LMCI,78.2,Female,11,Not Hisp/Latino,White,Married,2.5,25
+301,S198893,057_S_4909,8/22/13,m12,LMCI,78.2,Female,11,Not Hisp/Latino,White,Married,3,26
+409,S198139,057_S_5199,8/19/13,m03,SMC,66.8,Female,15,Not Hisp/Latino,Black,Married,NA,NA
+493,S191043,057_S_5199,5/31/13,bl,SMC,66.8,Female,15,Not Hisp/Latino,Black,Married,0.5,28
+496,S204230,057_S_5292,10/18/13,bl,SMC,74.3,Female,13,Not Hisp/Latino,White,Married,0,30
+497,S292959,057_S_5292,10/28/15,m24,SMC,74.3,Female,13,Not Hisp/Latino,White,Married,0.5,29
+498,S206898,057_S_5295,11/28/13,bl,SMC,75.5,Female,15,Not Hisp/Latino,White,Married,0.5,29
+499,S319089,057_S_5295,11/30/15,m24,SMC,75.5,Female,15,Not Hisp/Latino,White,Married,1,26
+36,S114179,094_S_2201,7/11/11,m06,EMCI,63.7,Female,18,Not Hisp/Latino,More than one,Married,0,29
+37,S137441,094_S_2201,1/19/12,m12,EMCI,63.7,Female,18,Not Hisp/Latino,More than one,Married,1,29
+38,S180256,094_S_2201,1/15/13,m24,EMCI,63.7,Female,18,Not Hisp/Latino,More than one,Married,1,30
+39,S211834,094_S_2201,2/4/14,m36,EMCI,63.7,Female,18,Not Hisp/Latino,More than one,Married,0,30
+40,S247411,094_S_2201,2/3/15,m48,EMCI,63.7,Female,18,Not Hisp/Latino,More than one,Married,0.5,29
+41,S97057,094_S_2201,1/3/11,bl,EMCI,63.7,Female,18,Not Hisp/Latino,More than one,Married,0.5,30
+42,S107554,094_S_2216,4/28/11,m03,EMCI,68.1,Male,14,Not Hisp/Latino,White,Married,NA,NA
+43,S121486,094_S_2216,9/8/11,m06,EMCI,68.1,Male,14,Not Hisp/Latino,White,Married,2,24
+44,S143197,094_S_2216,3/8/12,m12,EMCI,68.1,Male,14,Not Hisp/Latino,White,Married,1.5,26
+45,S183908,094_S_2216,3/7/13,m24,EMCI,68.1,Male,14,Not Hisp/Latino,White,Married,4,25
+46,S214422,094_S_2216,3/19/14,m36,EMCI,68.1,Male,14,Not Hisp/Latino,White,Married,3.5,20
+47,S251863,094_S_2216,3/17/15,m48,EMCI,68.1,Male,14,Not Hisp/Latino,White,Married,9,11
+448,S99218,094_S_2216,2/1/11,bl,EMCI,68.1,Male,14,Not Hisp/Latino,White,Married,1.5,27
+55,S100790,094_S_2238,3/2/11,m03,EMCI,68.5,Male,18,Not Hisp/Latino,White,Married,NA,NA
+56,S137317,094_S_2238,1/18/12,m12,EMCI,68.5,Male,18,Not Hisp/Latino,White,Married,0.5,30
+57,S180898,094_S_2238,1/24/13,m24,EMCI,68.5,Male,18,Not Hisp/Latino,White,Married,1,30
+58,S211690,094_S_2238,1/31/14,m36,EMCI,68.5,Male,18,Not Hisp/Latino,White,Married,0.5,29
+418,S117426,094_S_2238,8/4/11,m06,EMCI,68.5,Male,18,Not Hisp/Latino,White,Married,0.5,30
+500,S96335,094_S_2238,12/10/10,bl,EMCI,68.5,Male,18,Not Hisp/Latino,White,Married,1,29
+75,S128910,094_S_2367,11/10/11,m06,EMCI,74.7,Male,20,Not Hisp/Latino,White,Divorced,0.5,26
+76,S150630,094_S_2367,5/16/12,m12,EMCI,74.7,Male,20,Not Hisp/Latino,White,Divorced,0.5,27
+77,S260772,094_S_2367,5/19/15,m48,EMCI,74.7,Male,20,Not Hisp/Latino,White,Divorced,5,26
+450,S105435,094_S_2367,4/27/11,bl,EMCI,74.7,Male,20,Not Hisp/Latino,White,Divorced,1.5,25
+99,S125693,094_S_4089,10/18/11,m03,AD,73.7,Male,18,Not Hisp/Latino,White,Married,NA,NA
+100,S160962,094_S_4089,8/15/12,m12,AD,73.7,Male,18,Not Hisp/Latino,White,Married,3.5,24
+503,S113218,094_S_4089,6/29/11,bl,AD,73.7,Male,18,Not Hisp/Latino,White,Married,2.5,24
+517,S202297,094_S_4089,9/25/13,m24,AD,73.7,Male,18,Not Hisp/Latino,White,Married,6,18
+108,S131305,094_S_4162,11/29/11,m03,LMCI,71.3,Female,16,Not Hisp/Latino,White,Married,NA,NA
+109,S145116,094_S_4162,3/28/12,m06,LMCI,71.3,Female,16,Not Hisp/Latino,White,Married,1,26
+110,S162704,094_S_4162,8/23/12,m12,LMCI,71.3,Female,16,Not Hisp/Latino,White,Married,1,26
+111,S202471,094_S_4162,9/27/13,m24,LMCI,71.3,Female,16,Not Hisp/Latino,White,Married,3.5,22
+423,S283487,094_S_4162,10/6/15,m48,LMCI,71.3,Female,16,Not Hisp/Latino,White,Married,3.5,22
+457,S119135,094_S_4162,8/16/11,bl,LMCI,71.3,Female,16,Not Hisp/Latino,White,Married,1,26
+118,S135445,094_S_4234,1/3/12,m03,CN,70.1,Male,13,Not Hisp/Latino,White,Married,NA,NA
+119,S148434,094_S_4234,4/25/12,m06,CN,70.1,Male,13,Not Hisp/Latino,White,Married,0,29
+120,S171872,094_S_4234,10/18/12,m12,CN,70.1,Male,13,Not Hisp/Latino,White,Married,0,28
+121,S204936,094_S_4234,10/25/13,m24,CN,70.1,Male,13,Not Hisp/Latino,White,Married,0,27
+122,S435009,094_S_4234,5/5/16,m36,CN,70.1,Male,13,Not Hisp/Latino,White,Married,0.5,29
+459,S125725,094_S_4234,10/18/11,bl,CN,70.1,Male,13,Not Hisp/Latino,White,Married,0,28
+138,S125975,094_S_4282,10/20/11,bl,AD,89.6,Male,12,Not Hisp/Latino,White,Widowed,3.5,23
+139,S139529,094_S_4282,1/27/12,m03,AD,89.6,Male,12,Not Hisp/Latino,White,Widowed,NA,NA
+140,S147515,094_S_4282,4/17/12,m06,AD,89.6,Male,12,Not Hisp/Latino,White,Widowed,4,21
+159,S146299,094_S_4434,4/4/12,m03,EMCI,66.5,Male,17,Not Hisp/Latino,White,Divorced,NA,NA
+160,S157787,094_S_4434,7/17/12,m06,EMCI,66.5,Male,17,Not Hisp/Latino,White,Divorced,2.5,26
+161,S182807,094_S_4434,2/19/13,m12,EMCI,66.5,Male,17,Not Hisp/Latino,White,Divorced,2.5,29
+162,S213884,094_S_4434,3/11/14,m24,EMCI,66.5,Male,17,Not Hisp/Latino,White,Divorced,2.5,30
+428,S366269,094_S_4434,2/4/16,m48,EMCI,66.5,Male,17,Not Hisp/Latino,White,Divorced,1,29
+462,S137350,094_S_4434,1/18/12,bl,EMCI,66.5,Male,17,Not Hisp/Latino,White,Divorced,2,30
+169,S150535,094_S_4503,5/11/12,m03,CN,71.7,Female,19,Not Hisp/Latino,White,Divorced,NA,NA
+170,S169569,094_S_4503,9/27/12,m06,CN,71.7,Female,19,Not Hisp/Latino,White,Divorced,0,29
+171,S183448,094_S_4503,2/28/13,m12,CN,71.7,Female,19,Not Hisp/Latino,White,Divorced,1,30
+429,S218001,094_S_4503,5/6/14,m24,CN,71.7,Female,19,Not Hisp/Latino,White,Divorced,0,29
+430,S410110,094_S_4503,4/1/16,m36,CN,71.7,Female,19,Not Hisp/Latino,White,Divorced,0,29
+463,S141559,094_S_4503,2/22/12,bl,CN,71.7,Female,19,Not Hisp/Latino,White,Divorced,0.5,30
+180,S151852,094_S_4560,5/29/12,m03,CN,70.3,Female,20,Not Hisp/Latino,White,Married,NA,NA
+181,S170629,094_S_4560,10/11/12,m06,CN,70.3,Female,20,Not Hisp/Latino,White,Married,0,27
+182,S185159,094_S_4560,3/21/13,m12,CN,70.3,Female,20,Not Hisp/Latino,White,Married,0,30
+183,S216885,094_S_4560,4/22/14,m24,CN,70.3,Female,20,Not Hisp/Latino,White,Married,0,29
+465,S144256,094_S_4560,3/16/12,bl,CN,70.3,Female,20,Not Hisp/Latino,White,Married,0,28
+210,S162224,094_S_4630,8/21/12,m03,LMCI,65.4,Female,16,Not Hisp/Latino,White,Divorced,NA,NA
+211,S219817,094_S_4630,5/27/14,m24,LMCI,65.4,Female,16,Not Hisp/Latino,White,Divorced,2,26
+470,S146119,094_S_4630,4/3/12,bl,LMCI,65.4,Female,16,Not Hisp/Latino,White,Divorced,1.5,30
+506,S206938,094_S_4630,9/24/13,m18,LMCI,65.4,Female,16,Not Hisp/Latino,White,Divorced,NA,NA
+226,S162194,094_S_4649,8/21/12,m03,CN,65.4,Male,18,Not Hisp/Latino,White,Divorced,NA,NA
+227,S190566,094_S_4649,5/28/13,m12,CN,65.4,Male,18,Not Hisp/Latino,White,Divorced,0,27
+228,S221832,094_S_4649,6/10/14,m24,CN,65.4,Male,18,Not Hisp/Latino,White,Divorced,0,30
+471,S149976,094_S_4649,5/10/12,bl,CN,65.4,Male,18,Not Hisp/Latino,White,Divorced,0,30
+243,S163040,094_S_4737,8/28/12,m03,AD,74.3,Female,12,Not Hisp/Latino,White,Married,NA,NA
+474,S153532,094_S_4737,6/8/12,bl,AD,74.3,Female,12,Not Hisp/Latino,White,Married,4.5,23
+265,S186481,094_S_4858,4/9/13,m06,EMCI,55,Male,16,Not Hisp/Latino,White,Married,2.5,27
+266,S204095,094_S_4858,10/16/13,m12,EMCI,55,Male,16,Not Hisp/Latino,White,Married,0.5,29
+267,S235259,094_S_4858,10/29/14,m24,EMCI,55,Male,16,Not Hisp/Latino,White,Married,3.5,28
+477,S167133,094_S_4858,9/11/12,bl,EMCI,55,Male,16,Not Hisp/Latino,White,Married,2,30
+8,S100849,098_S_2047,3/2/11,m06,EMCI,77.4,Male,18,Not Hisp/Latino,White,Married,4.5,27
+9,S200737,098_S_2047,9/12/13,m36,EMCI,77.4,Male,18,Not Hisp/Latino,White,Married,8,22
+10,S95880,098_S_2047,12/6/10,m03,EMCI,77.4,Male,18,Not Hisp/Latino,White,Married,NA,NA
+415,S121962,098_S_2047,9/13/11,m12,EMCI,77.4,Male,18,Not Hisp/Latino,White,Married,6,26
+416,S169096,098_S_2047,9/26/12,m24,EMCI,77.4,Male,18,Not Hisp/Latino,White,Married,5.5,28
+442,S91293,098_S_2047,8/18/10,bl,EMCI,77.4,Male,18,Not Hisp/Latino,White,Married,2.5,27
+11,S101948,098_S_2052,3/8/11,m06,EMCI,73.1,Male,20,Not Hisp/Latino,White,Married,2.5,29
+12,S200042,098_S_2052,9/5/13,m36,EMCI,73.1,Male,20,Not Hisp/Latino,White,Married,3,30
+13,S231374,098_S_2052,9/17/14,m48,EMCI,73.1,Male,20,Not Hisp/Latino,White,Married,NA,27
+14,S91924,098_S_2052,9/8/10,bl,EMCI,73.1,Male,20,Not Hisp/Latino,White,Married,1,29
+15,S96529,098_S_2052,12/10/10,m03,EMCI,73.1,Male,20,Not Hisp/Latino,White,Married,NA,NA
+417,S121983,098_S_2052,9/13/11,m12,EMCI,73.1,Male,20,Not Hisp/Latino,White,Married,1.5,30
+19,S101839,098_S_2079,3/9/11,m06,EMCI,65.5,Male,13,Not Hisp/Latino,White,Married,0.5,27
+20,S96653,098_S_2079,12/15/10,m03,EMCI,65.5,Male,13,Not Hisp/Latino,White,Married,NA,NA
+444,S92417,098_S_2079,9/22/10,bl,EMCI,65.5,Male,13,Not Hisp/Latino,White,Married,1.5,25
+87,S125667,098_S_4003,10/13/11,m06,CN,72.3,Female,16,Unknown,White,Married,0,30
+88,S190123,098_S_4003,5/13/13,m24,CN,72.3,Female,16,Unknown,White,Married,0,30
+89,S216362,098_S_4003,4/15/14,m36,CN,72.3,Female,16,Unknown,White,Married,0,30
+451,S102157,098_S_4003,3/22/11,bl,CN,72.3,Female,16,Unknown,White,Married,0,30
+452,S144221,098_S_4003,3/16/12,m12,CN,72.3,Female,16,Unknown,White,Married,0,29
+92,S136248,098_S_4018,11/28/11,m06,CN,76.1,Male,18,Not Hisp/Latino,White,Married,0,29
+93,S151303,098_S_4018,5/21/12,m12,CN,76.1,Male,18,Not Hisp/Latino,White,Married,0,27
+94,S190131,098_S_4018,5/6/13,m24,CN,76.1,Male,18,Not Hisp/Latino,White,Married,0.5,30
+95,S268636,098_S_4018,6/10/15,m48,CN,76.1,Male,18,Not Hisp/Latino,White,Married,0,29
+453,S105027,098_S_4018,4/22/11,bl,CN,76.1,Male,18,Not Hisp/Latino,White,Married,0,29
+96,S125654,098_S_4059,10/12/11,m03,EMCI,71.9,Male,18,Not Hisp/Latino,White,Married,NA,NA
+97,S136263,098_S_4059,12/14/11,m06,EMCI,71.9,Male,18,Not Hisp/Latino,White,Married,2,28
+98,S159634,098_S_4059,8/6/12,m12,EMCI,71.9,Male,18,Not Hisp/Latino,White,Married,3,25
+454,S109782,098_S_4059,5/24/11,bl,EMCI,71.9,Male,18,Not Hisp/Latino,White,Married,2,29
+112,S122170,098_S_4201,9/14/11,bl,AD,64,Female,15,Not Hisp/Latino,White,Married,6,24
+113,S139785,098_S_4201,2/3/12,m03,AD,64,Female,15,Not Hisp/Latino,White,Married,NA,NA
+114,S146445,098_S_4201,4/3/12,m06,AD,64,Female,15,Not Hisp/Latino,White,Married,6,20
+115,S136229,098_S_4215,12/12/11,m03,AD,81.6,Male,20,Unknown,White,Married,NA,NA
+116,S173099,098_S_4215,10/30/12,m12,AD,81.6,Male,20,Unknown,White,Married,2.5,24
+117,S204566,098_S_4215,10/16/13,m24,AD,81.6,Male,20,Unknown,White,Married,7,21
+458,S121932,098_S_4215,9/12/11,bl,AD,81.6,Male,20,Unknown,White,Married,4.5,26
+132,S145571,098_S_4275,3/27/12,m03,CN,72.8,Male,18,Not Hisp/Latino,White,Married,NA,NA
+133,S196036,098_S_4275,7/22/13,m12,CN,72.8,Male,18,Not Hisp/Latino,White,Married,0.5,29
+134,S349224,098_S_4275,1/11/16,m48,CN,72.8,Male,18,Not Hisp/Latino,White,Married,NA,30
+424,S155260,098_S_4275,6/7/12,m06,CN,72.8,Male,18,Not Hisp/Latino,White,Married,0,30
+425,S211937,098_S_4275,2/4/14,m24,CN,72.8,Male,18,Not Hisp/Latino,White,Married,0,29
+518,S125682,098_S_4275,10/17/11,bl,CN,72.8,Male,18,Not Hisp/Latino,White,Married,0,29
+172,S155271,098_S_4506,6/22/12,m03,CN,71.5,Male,19,Not Hisp/Latino,White,Married,NA,NA
+173,S167381,098_S_4506,9/12/12,m06,CN,71.5,Male,19,Not Hisp/Latino,White,Married,0.5,30
+174,S197407,098_S_4506,8/2/13,m12,CN,71.5,Male,19,Not Hisp/Latino,White,Married,3,29
+175,S447003,098_S_4506,3/14/14,m24,CN,71.5,Male,19,Not Hisp/Latino,White,Married,3,29
+464,S141779,098_S_4506,2/24/12,bl,CN,71.5,Male,19,Not Hisp/Latino,White,Married,0.5,30
+147,S206831,129_S_4371,11/26/13,m24,CN,67.7,Male,18,Not Hisp/Latino,White,Married,0,29
