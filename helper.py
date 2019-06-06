@@ -1,48 +1,6 @@
 #### Base Module with most necessary imports and helper functions ###
 
 
-######## Imports ########
-import tensorflow as tf
-import numpy as np
-import pandas as pd
-import keras
-import umap
-import innvestigate
-import innvestigate.utils as iutils
-import sys
-
-from imblearn.over_sampling import SMOTE
-from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-# Converting labels to 1-Hot Vectors
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.metrics import confusion_matrix
-from sklearn.utils.multiclass import unique_labels
-
-import matplotlib
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
-##########################
-
-root_logdir = "./tf_logs"
-datadir = "data/"
-figures_dir = "data/figures/"
-
-plt.rcParams['axes.labelsize'] = 14
-plt.rcParams['xtick.labelsize'] = 12
-plt.rcParams['ytick.labelsize'] = 12
-
-# To make notebooks' output stable across runs
-def reset_graph(seed=42):
-    tf.reset_default_graph()
-    tf.set_random_seed(seed)
-    np.random.seed(seed)
-np.random.seed(seed=42) 
-
-print(tf.__version__)
-
 
 ############ Custom Transformers #####################
 
@@ -77,12 +35,16 @@ class OverSampler(BaseEstimator, TransformerMixin):
         return self.smote.fit_resample(X,y)
 
 class dfHotEncoder(BaseEstimator, TransformerMixin):
+    
+    
     """
     Builds a hot encoder froma pandas dataframe
     Since the function expects an array of "features" per sample,
     we reshape the values
     """
     def __init__(self, random_state=42):
+        from sklearn.preprocessing import OneHotEncoder
+        
         self.enc = OneHotEncoder(categories="auto", sparse=False)
         self.categories_ = None
         return None
@@ -103,12 +65,9 @@ class dfHotEncoder(BaseEstimator, TransformerMixin):
 
 
 ########## Methods for Generating Simulated Data ############
-
-
-from sklearn.datasets import make_circles
-from sklearn.datasets import make_moons
-from sklearn.datasets.samples_generator import make_blobs
-from matplotlib import pyplot
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from pandas import DataFrame
 
 '''
@@ -117,7 +76,8 @@ Returns orginal samples, labels and modded_samples,modded_labels
 def modded_iris():
 
     from sklearn import datasets
-
+    import pandas as pd
+    
     iris = datasets.load_iris()
 
     features = pd.DataFrame(iris["data"])
@@ -187,18 +147,27 @@ Returns 8 gaussian blobs surrounding one center blob
 modded_labels: The labels for all 9 classes
 '''
 def simulate_blobs(class_size = 200):
+    
+    import matplotlib.pyplot as plt
+    from sklearn.preprocessing import OneHotEncoder
+    from sklearn.datasets.samples_generator import make_blobs
+    
     centers = [2*(x,y) for x in range(-1,2) for y in range(-1,2)]
     n_samples = [class_size//(len(centers)-1)]*len(centers)
     n_samples[len(centers)//2] = class_size
-
-    X, y = make_blobs(n_samples=n_samples, centers=centers, n_features=2, cluster_std=0.1, shuffle=False, random_state=42)
-
+    
+    print("Creating data...")
+    X, y = make_blobs(n_samples=n_samples, centers=centers, n_features=2,
+                      cluster_std=0.1, shuffle=False, random_state=42)
+    
     plt.close("Original Distribution")
     df = DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
     fig, ax = plt.subplots(num= "Original Distribution")
     colors = {0:'red', 1:'blue'}
+    
     df.plot(ax=ax,kind="scatter", x='x', y='y',c="label", cmap= "Paired")
     # plt.colorbar()
+    
     plt.show()
     
     original_labels = df["label"].copy()
@@ -207,13 +176,6 @@ def simulate_blobs(class_size = 200):
     labels[labels != 4] = 0
     labels[labels == 4] = 1
     return df, modded_samples,labels, original_labels
-
-
-
-
-
-
-
 
 
 ############# Misc. Helper Methods ##################
@@ -228,6 +190,9 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
+    
+    from sklearn.metrics import confusion_matrix
+    
     if not title:
         if normalize:
             title = 'Normalized confusion matrix'
@@ -330,16 +295,18 @@ def remove_label(features, labels, label="MCI"):
 '''
 Assumes categorical output from DNN
 '''
-def getCorrectPredictions(model, samples, labels):
+def getCorrectPredictions(model, samples, labels, enc):
     
-    predictions = model.predict(scaled_samples)
+    import numpy as np
+    
+    predictions = model.predict(samples)
     preds = np.array([np.argmax(x) for x in predictions])
     true_labels = np.array([x for x in labels])
 
     correct = preds == true_labels
 
     print("Prediction Accuracy")
-    loss_and_metrics = model.evaluate(scaled_samples, labels)
+    loss_and_metrics = model.evaluate(samples, enc.transform(labels))
     print("Scores on data set: loss={:0.3f} accuracy={:.4f}".format(*loss_and_metrics))
     
     return samples[correct], labels[correct], correct
@@ -374,4 +341,42 @@ def plotSeparatedLRP(lrp):
 
         
         
-        
+####################### Custom Split Functions ############################
+def get_split_index(features, labels, test_size=0.1):
+    import numpy as np
+    from sklearn.model_selection import StratifiedShuffleSplit
+    
+    features = np.array(features)
+    # The train set will have equal amounts of each target class
+    # Performing single split
+    split = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=42)
+    return [[train_index, test_index] for train_index,test_index in split.split(features, labels)]
+
+def split_valid(features, original_labels, training_labels, valid_size=0.5):
+    train_index, validation_index = get_split_index(features, original_labels, test_size=valid_size)[0]
+    
+    X_valid, y_valid, y_valid_original = features.iloc[validation_index], training_labels.iloc[validation_index], original_labels.iloc[validation_index]
+    X_train, y_train, y_original = features.iloc[train_index], training_labels.iloc[train_index], original_labels.iloc[train_index]
+     
+    return X_train, y_train, y_original, X_valid, y_valid, y_valid_original
+
+def get_train_test_val(features, original_labels, training_labels):
+    
+    X, y, y_original, X_valid, y_valid, y_valid_original = split_valid(features,original_labels, training_labels)
+   
+    train_index, test_index = get_split_index(X, y_original)[0]
+    X_train = X.iloc[train_index]
+    y_train = y.iloc[train_index]
+    X_test = X.iloc[test_index]
+    y_test = y.iloc[test_index]
+
+    return X_train, y_train, X_test, y_test, y_original, X_valid, y_valid, y_valid_original        
+
+
+def getKF(X,y, n_splits=10):
+    from sklearn.model_selection import StratifiedKFold as KFold
+    
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42 ) #Default = 10
+
+    for train_index, test_index in kf.split(X,y):
+        yield train_index, test_index
