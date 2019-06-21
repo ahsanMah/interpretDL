@@ -8,9 +8,17 @@ class ClusterPipeline:
     """
 
 
+    class Dataset:
+        '''
+        Helper class to couple features with their labels easily
+        '''
+        def __init__(self, X,y):
+            self.features = X
+            self.labels = y
+
     class dfHotEncoder(BaseEstimator, TransformerMixin):
         """
-        Builds a hot encoder froma pandas dataframe
+        Builds a hot encoder from a pandas dataframe
         Since the function expects an array of "features" per sample,
         we reshape the values
         """
@@ -30,7 +38,7 @@ class ClusterPipeline:
             return self.enc.transform(labels.values.reshape(-1,1))
     
 
-    def __init__(self, model, data,
+    def __init__(self, model, train_set, val_set,
                 analyzer="lrp",
                 cluster_algo = "HDBSCAN",
                 linearClassifier="SVM"):
@@ -39,10 +47,11 @@ class ClusterPipeline:
         data: [training_data, validation_data]
         """
         self.model = model
-        self.train_set, self.val_set = data
+        self.train_set = self.Dataset(*train_set)
+        self.val_set = self.Dataset(*val_set)
 
-        self.hot_encoder = dfHotEncoder()
-        self.hot_encoder.fit(self.train_set[1]) #train_set=[X_train,y_train]
+        self.hot_encoder = self.dfHotEncoder()
+        self.hot_encoder.fit(self.train_set.labels)
         self.history = None
     
     def train(self, model, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=1, plot=True):
@@ -64,7 +73,7 @@ class ClusterPipeline:
     def train_model(self, batch_size=20, epochs=200, cross_validation=False):
         
         if not cross_validation:
-            X_train, y_train = self.train_set
+            X_train, y_train = self.train_set.features, self.train_set.labels
             history, ZScaler = self.train(self.model, X_train,y_train, batch_size=batch_size, epochs=epochs)
 
             self.getCorrectPredictions(self.model, ZScaler)
@@ -91,10 +100,10 @@ class ClusterPipeline:
         
         import numpy as np
         
-        samples = self.val_set[0]
+        samples = self.val_set.features
         if ZScaler: samples = ZScaler.transform(samples)
         
-        labels = self.hot_encoder.transform(self.val_set[1])
+        labels = self.hot_encoder.transform(self.val_set.labels)
 
         predictions = model.predict(samples)
         preds = np.array([np.argmax(x) for x in predictions])
