@@ -1,6 +1,9 @@
 from common_imports import *
 from helper import *
 
+from multiprocessing import Pool
+
+
 class ClusterPipeline:
     """
         model: A keras deep neural network
@@ -64,7 +67,7 @@ class ClusterPipeline:
         # Each fold should train a fresh model and save its weights
         self.foldctr = 0
 
-    def train(self, model, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=1):
+    def train(self, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=1, foldctr=0):
         """
         Trains a model using keras API, after scaling the data
         """
@@ -75,16 +78,39 @@ class ClusterPipeline:
         X_train = ZScaler.transform(X)
         y_train = self.hot_encoder.transform(y)
 
-        history = model.fit(X_train, y_train,
+        history = self.model.fit(X_train, y_train,
                         epochs=epochs, batch_size = batch_size, verbose=verbose)
         
         self.model.save_weights(
-            "{basename}_{id}.h5".format(basename=self.BASENAME, id=self.foldctr)
+            "{basename}_{id}.h5".format(basename=self.BASENAME, id=foldctr)
         )
 
         return history, ZScaler
 
-    def cross_validation(slef, num_folds = 10,):
+    def runDNNAnalysis(self, X_train, y_train, epochs, batch_size, foldctr=0):
+        import innvestigate
+        import innvestigate.utils as iutils
+        
+        history, ZScaler = self.train(X_train, y_train, epochs=epochs, batch_size=batch_size, foldctr=foldctr)
+
+        # Getting all the samples that can be correctly predicted
+        # Note: Samples have already been scaled
+        all_samples, _labels, correct_idxs, final_acc = self.getCorrectPredictions(self.model, ZScaler)
+
+        # Stripping the softmax activation from the model
+        model_w_softmax = self.model
+        model_softmax_stripped = iutils.keras.graph.model_wo_softmax(model_w_softmax)
+
+        # Creating an analyzer
+        lrp_E = innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
+                model=model_softmax_stripped, epsilon=1e-3)
+
+        lrp_results = lrp_E.analyze(all_samples)
+        
+        print("Finished training Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldctr, *final_acc))
+        return (final_acc, lrp_results)
+
+    def cross_validation(self, num_folds = 10,):
         
         # Populate Zoo here perhaps
         # Use the h5 weight files...
@@ -97,9 +123,9 @@ class ClusterPipeline:
 
         if not cross_validation:
             X_train, y_train = self.train_set.features, self.train_set.labels
-            history, ZScaler = self.train(self.model, X_train,y_train, batch_size=batch_size, epochs=epochs)
+            final_acc, lrp_results = self.runDNNAnalysis(X_train, y_train, epochs=epochs, batch_size=batch_size)
 
-            self.getCorrectPredictions(self.model, ZScaler)
+            #Plot LRP
         else:
             pass
         return
@@ -114,30 +140,31 @@ class ClusterPipeline:
         return X_train, y_train, y_original, X_valid, y_valid, y_valid_original
 
 
-    '''
-    Assumes categorical output from DNN
-    Will always get correct predcitions from the validation set
-    using the current tained model
-    '''
+
     def getCorrectPredictions(self, model, ZScaler=None):
-        
+        '''
+        Assumes categorical output from DNN
+        Will always get correct predcitions from the validation set
+        using the current tained model
+        '''
         import numpy as np
         
         samples = self.val_set.features
         if ZScaler: samples = ZScaler.transform(samples)
         
-        labels = self.hot_encoder.transform(self.val_set.labels)
+        labels = self.val_set.labels
 
         predictions = model.predict(samples)
         preds = np.array([np.argmax(x) for x in predictions])
         true_labels = np.array([x for x in labels])
 
-        correct = preds == true_labels
+        correct_idxs = preds == true_labels
 
-        print("Prediction Accuracy")
+        print("Prediction Accuracy") 
+        labels = self.hot_encoder.transform(self.val_set.labels)
         loss_and_metrics = model.evaluate(samples, labels)
         print("Scores on data set: loss={:0.3f} accuracy={:.4f}".format(*loss_and_metrics))
         
         # correct_predictions = 
 
-        return samples[correct], labels[correct], correct
+        return samples[correct_idxs], labels[correct_idxs], correct_idxs, loss_and_metrics
