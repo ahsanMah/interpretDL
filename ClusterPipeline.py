@@ -67,7 +67,7 @@ class ClusterPipeline:
         # Each fold should train a fresh model and save its weights
         self.foldctr = 0
 
-    def train(self, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=1, foldctr=0):
+    def train(self, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=0, foldctr=0):
         """
         Trains a model using keras API, after scaling the data
         """
@@ -87,7 +87,7 @@ class ClusterPipeline:
 
         return history, ZScaler
 
-    def runDNNAnalysis(self, X_train, y_train, epochs, batch_size, foldctr=0):
+    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, foldctr=0):
         import innvestigate
         import innvestigate.utils as iutils
         
@@ -95,7 +95,7 @@ class ClusterPipeline:
 
         # Getting all the samples that can be correctly predicted
         # Note: Samples have already been scaled
-        all_samples, _labels, correct_idxs, final_acc = self.getCorrectPredictions(self.model, ZScaler)
+        all_samples, _labels, correct_pred_idxs, final_acc = self.getCorrectPredictions(self.model, ZScaler)
 
         # Stripping the softmax activation from the model
         model_w_softmax = self.model
@@ -108,13 +108,16 @@ class ClusterPipeline:
         lrp_results = lrp_E.analyze(all_samples)
         
         print("Finished training Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldctr, *final_acc))
-        return (final_acc, lrp_results)
+        return (final_acc, lrp_results, correct_pred_idxs)
 
-    def cross_validation(self, num_folds = 10,):
+    def cross_validation(self, batch_size, epochs, num_folds = 10,  ):
         
         # Populate Zoo here perhaps
         # Use the h5 weight files...
         # self.model_zoo.append(model)
+
+
+
         pass
 
     def train_model(self, batch_size=20, epochs=200, cross_validation=False):
@@ -141,18 +144,17 @@ class ClusterPipeline:
 
 
 
-    def getCorrectPredictions(self, model, ZScaler=None):
+    def getCorrectPredictions(self, model, 
+                              samples=self.val_set.features,
+                              labels=self.val_set.labels, ZScaler=None):
         '''
         Assumes categorical output from DNN
-        Will always get correct predcitions from the validation set
+        Will default to getting correct predcitions from the validation set
         using the current tained model
         '''
         import numpy as np
         
-        samples = self.val_set.features
         if ZScaler: samples = ZScaler.transform(samples)
-        
-        labels = self.val_set.labels
 
         predictions = model.predict(samples)
         preds = np.array([np.argmax(x) for x in predictions])
@@ -161,7 +163,7 @@ class ClusterPipeline:
         correct_idxs = preds == true_labels
 
         print("Prediction Accuracy") 
-        labels = self.hot_encoder.transform(self.val_set.labels)
+        labels = self.hot_encoder.transform(labels)
         loss_and_metrics = model.evaluate(samples, labels)
         print("Scores on data set: loss={:0.3f} accuracy={:.4f}".format(*loss_and_metrics))
         
