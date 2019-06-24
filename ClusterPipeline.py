@@ -1,8 +1,17 @@
 from common_imports import *
 from helper import *
 
-from multiprocessing import Pool
+# from multiprocessing import Pool
+# from multiprocess import Pool
+from time import time
 
+# num_procs = 4
+
+# if __name__ == "__main__":
+#     pass
+# else:
+#     POOL = Pool(num_procs)
+#     print("Declared pool worker...")
 
 class ClusterPipeline:
     """
@@ -71,6 +80,7 @@ class ClusterPipeline:
         """
         Trains a model using keras API, after scaling the data
         """
+        from sklearn.preprocessing import StandardScaler
         self.model.load_weights(self.INITFILE)
 
         ZScaler = StandardScaler().fit(X)
@@ -95,7 +105,7 @@ class ClusterPipeline:
 
         # Getting all the samples that can be correctly predicted
         # Note: Samples have already been scaled
-        all_samples, _labels, correct_pred_idxs, final_acc = self.getCorrectPredictions(self.model, ZScaler)
+        all_samples, _labels, correct_pred_idxs, final_acc = self.getCorrectPredictions(model=self.model, ZScaler=ZScaler)
 
         # Stripping the softmax activation from the model
         model_w_softmax = self.model
@@ -110,15 +120,37 @@ class ClusterPipeline:
         print("Finished training Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldctr, *final_acc))
         return (final_acc, lrp_results, correct_pred_idxs)
 
-    def cross_validation(self, batch_size, epochs, num_folds = 10,  ):
-        
+    
+    def cross_validation(self, batch_size, epochs, num_folds = 10):
         # Populate Zoo here perhaps
         # Use the h5 weight files...
         # self.model_zoo.append(model)
+        
+        start_time = time()
+        
+        histories = []
+        testing_indxs =[]
+        predictions = []
+        true_labels = []
+        cv_lrp_results = []
+        zoo = []
+        results = []
 
+        num_procs = 3
 
+        pool_args = [(self, fnum, tr_idx, tst_idx, batch_size, epochs) for fnum, (tr_idx, tst_idx) in enumerate(self.getKFold(n_splits=num_folds))]
+         
+        # # if __name__ == '__main__':
+        # print("Running Pool...")
+        # results = pool.map(lambda _args : runFoldWorker(*_args), pool_args)
+        
+        # print("Running Serial Crossvalidation")
+        for _args in pool_args:
+            results.append(runFoldWorker(*_args))
 
-        pass
+        print("Runtime: {:.3f}s".format(time()-start_time))
+
+        return (cv_lrp_results, testing_indxs)
 
     def train_model(self, batch_size=20, epochs=200, cross_validation=False):
         
@@ -130,9 +162,22 @@ class ClusterPipeline:
 
             #Plot LRP
         else:
-            pass
+            self.cross_validation(batch_size,epochs,num_folds=4)
         return
 
+
+    def getKFold(self, train_data=None, n_splits=10):
+        from sklearn.model_selection import StratifiedKFold as KFold
+        
+        kf = KFold(n_splits=n_splits, shuffle=True, random_state=42 ) #Default = 10
+
+        X = train_data.features if train_data else self.train_set.features
+        y = train_data.labels if train_data else self.train_set.labels 
+
+        for train_index, test_index in kf.split(X,y):
+            yield train_index, test_index
+        
+        return
 
     def split_valid(self, features, original_labels, training_labels, valid_size=0.5):
         train_index, validation_index = get_split_index(features, original_labels, test_size=valid_size)[0]
@@ -143,10 +188,9 @@ class ClusterPipeline:
         return X_train, y_train, y_original, X_valid, y_valid, y_valid_original
 
 
-
     def getCorrectPredictions(self, model, 
-                              samples=self.val_set.features,
-                              labels=self.val_set.labels, ZScaler=None):
+                              samples=None,
+                              labels=None, ZScaler=None):
         '''
         Assumes categorical output from DNN
         Will default to getting correct predcitions from the validation set
@@ -154,6 +198,10 @@ class ClusterPipeline:
         '''
         import numpy as np
         
+        if samples == None and labels==None:
+            samples = self.val_set.features
+            labels = self.val_set.labels
+
         if ZScaler: samples = ZScaler.transform(samples)
 
         predictions = model.predict(samples)
@@ -170,3 +218,17 @@ class ClusterPipeline:
         # correct_predictions = 
 
         return samples[correct_idxs], labels[correct_idxs], correct_idxs, loss_and_metrics
+
+
+######## HELPER FUNCTIONS ############
+
+def runFoldWorker(pipeline, foldnum, train_index, test_index, batch_size, epochs):
+    print("Inside worker:",foldnum)
+    X_train = pipeline.train_set.features.iloc[train_index]
+    y_train = pipeline.train_set.labels.iloc[train_index]
+    X_test  = pipeline.train_set.features.iloc[test_index]
+    y_test = pipeline.train_set.labels.iloc[test_index]
+    final_acc, lrp_results, correct_pred_idxs = pipeline.runDNNAnalysis(X_train, y_train, 
+                                                epochs=epochs, batch_size=batch_size, foldctr=foldnum)
+
+    return (lrp_results, correct_pred_idxs)
