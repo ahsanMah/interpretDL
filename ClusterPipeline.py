@@ -1,24 +1,29 @@
-from common_imports import *
-from helper import *
+# from common_imports import *
+# from helper import *
+import os
+import tensorflow as tf
+from sklearn.base import BaseEstimator, TransformerMixin
 
 # from multiprocessing import Pool
-# from multiprocess import Pool
+from multiprocess import Pool
+from multiprocess import get_context
 from time import time
 
 # num_procs = 4
 
 # if __name__ == "__main__":
-#     pass
-# else:
+#     workers = Pool(processes = os.cpu_count()//2)
+#     print(workers)
+# # else:
 #     POOL = Pool(num_procs)
 #     print("Declared pool worker...")
+
 
 class ClusterPipeline:
     """
         model: A keras deep neural network
         data: Original dataset which will be used for training and validation
     """
-
 
     class Dataset:
         '''
@@ -71,12 +76,13 @@ class ClusterPipeline:
         self.hot_encoder.fit(self.train_set.labels)
         self.history = None
         self.model_zoo = []
+        self.zscalers = {}
 
         # Fold counter to keep track of which model is being trained
         # Each fold should train a fresh model and save its weights
         self.foldctr = 0
 
-    def train(self, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=0, foldctr=0):
+    def train(self, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=0, foldnum=0):
         """
         Trains a model using keras API, after scaling the data
         """
@@ -92,16 +98,19 @@ class ClusterPipeline:
                         epochs=epochs, batch_size = batch_size, verbose=verbose)
         
         self.model.save_weights(
-            "{basename}_{id}.h5".format(basename=self.BASENAME, id=foldctr)
+            "{basename}_{id}.h5".format(basename=self.BASENAME, id=foldnum)
         )
+
+        self.zscalers[foldnum] = ZScaler
 
         return history, ZScaler
 
-    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, foldctr=0):
+    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, foldnum=0):
+        # import keras
         import innvestigate
         import innvestigate.utils as iutils
-        
-        history, ZScaler = self.train(X_train, y_train, epochs=epochs, batch_size=batch_size, foldctr=foldctr)
+
+        history, ZScaler = self.train(X_train, y_train, epochs=epochs, batch_size=batch_size, foldnum=foldnum)
 
         # Getting all the samples that can be correctly predicted
         # Note: Samples have already been scaled
@@ -109,6 +118,8 @@ class ClusterPipeline:
 
         # Stripping the softmax activation from the model
         model_w_softmax = self.model
+        # print("Model in child:")
+        # print(self.model.summary())
         model_softmax_stripped = iutils.keras.graph.model_wo_softmax(model_w_softmax)
 
         # Creating an analyzer
@@ -117,10 +128,21 @@ class ClusterPipeline:
 
         lrp_results = lrp_E.analyze(all_samples)
         
-        print("Finished training Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldctr, *final_acc))
+        print("Finished training Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldnum, *final_acc))
         return (final_acc, lrp_results, correct_pred_idxs)
 
     
+    def runFoldWorker(self, foldnum, train_index, test_index, batch_size, epochs):
+        print("Inside worker:",foldnum)
+        X_train = self.train_set.features.iloc[train_index]
+        y_train = self.train_set.labels.iloc[train_index]
+        X_test  = self.train_set.features.iloc[test_index]
+        y_test = self.train_set.labels.iloc[test_index]
+        final_acc, lrp_results, correct_pred_idxs = self.runDNNAnalysis(X_train, y_train, 
+                                                    epochs=epochs, batch_size=batch_size, foldnum=foldnum)
+
+        return (lrp_results, correct_pred_idxs)
+
     def cross_validation(self, batch_size, epochs, num_folds = 10):
         # Populate Zoo here perhaps
         # Use the h5 weight files...
@@ -138,15 +160,21 @@ class ClusterPipeline:
 
         num_procs = 3
 
-        pool_args = [(self, fnum, tr_idx, tst_idx, batch_size, epochs) for fnum, (tr_idx, tst_idx) in enumerate(self.getKFold(n_splits=num_folds))]
+        pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) for fnum, (tr_idx, tst_idx) in enumerate(self.getKFold(n_splits=num_folds))]
          
-        # # if __name__ == '__main__':
-        # print("Running Pool...")
-        # results = pool.map(lambda _args : runFoldWorker(*_args), pool_args)
+        # if __name__ == '__main__':
+        print("Running Pool...")
+        with get_context("spawn").Pool(processes = os.cpu_count()//2) as pool:
+            print("Initialized Pool...")
+            results = pool.starmap(self.runFoldWorker, pool_args)
+            
+            # print(pool_args)
+            # pass
+        # results = workers.starmap(self.runFoldWorker, pool_args)
         
         # print("Running Serial Crossvalidation")
-        for _args in pool_args:
-            results.append(runFoldWorker(*_args))
+        # for _args in pool_args:
+        #     results.append(runFoldWorker(*_args))
 
         print("Runtime: {:.3f}s".format(time()-start_time))
 
@@ -156,13 +184,12 @@ class ClusterPipeline:
         
         self.model_zoo = []
 
-        if not cross_validation:
-            X_train, y_train = self.train_set.features, self.train_set.labels
-            final_acc, lrp_results = self.runDNNAnalysis(X_train, y_train, epochs=epochs, batch_size=batch_size)
-
-            #Plot LRP
+        if cross_validation:
+            self.cross_validation(batch_size,epochs)
         else:
-            self.cross_validation(batch_size,epochs,num_folds=4)
+            X_train, y_train = self.train_set.features, self.train_set.labels
+            final_acc, lrp_results, correect_preds = self.runDNNAnalysis(X_train, y_train, epochs=epochs, batch_size=batch_size)
+            #Plot LRP
         return
 
 
@@ -222,13 +249,30 @@ class ClusterPipeline:
 
 ######## HELPER FUNCTIONS ############
 
-def runFoldWorker(pipeline, foldnum, train_index, test_index, batch_size, epochs):
-    print("Inside worker:",foldnum)
-    X_train = pipeline.train_set.features.iloc[train_index]
-    y_train = pipeline.train_set.labels.iloc[train_index]
-    X_test  = pipeline.train_set.features.iloc[test_index]
-    y_test = pipeline.train_set.labels.iloc[test_index]
-    final_acc, lrp_results, correct_pred_idxs = pipeline.runDNNAnalysis(X_train, y_train, 
-                                                epochs=epochs, batch_size=batch_size, foldctr=foldnum)
+'''
+Expects data to be 2D numpy array
+'''
+def calculateEntropy(data, plot=False):
+    from scipy.stats import entropy
+    
+    nsamples = len(data)
+    nbins = 30
 
-    return (lrp_results, correct_pred_idxs)
+    xedges = np.linspace(0,15,nbins+1)
+    yedges = np.linspace(0,15,nbins+1)
+    
+    x = np.clip(data[:,0], xedges[0], xedges[-1])
+    y = np.clip(data[:,1], yedges[0], yedges[-1])
+    
+    grid, xedges, yedges = np.histogram2d(x, y, bins=[xedges,yedges])
+    densities = (grid/nsamples).flatten()
+    
+    if plot:
+        fig, ax = plt.subplots(1, figsize=(8, 8))
+
+        ax.imshow(grid, interpolation='nearest', origin='low',
+                    extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]], cmap="jet")
+#         plt.colorbar()
+        plt.show()
+    
+    return entropy(densities)
