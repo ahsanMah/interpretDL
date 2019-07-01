@@ -204,15 +204,18 @@ class ClusterPipeline:
         if not self.zscalers: self.load_scalers()
         
         #FIXME: If every DNN gives an incorrect output
-
         predictions = []
         for i,zscaler in enumerate(self.zscalers):
             _samples = zscaler.transform(self.val_set.features)
-            model_preds = np.array([(np.argmax(x), np.max(x)) for x in self.foldmodel(i).predict(_samples)])
+            model_preds = np.array([(np.argmax(x), np.max(x)) for x in self.foldmodel(i).predict(_samples)])     
+            incorrect = model_preds[:,0] != self.val_set.labels
+            model_preds[incorrect] = -1
             predictions.append(model_preds)
 
         # Combine all DNN predictions into a matrix
         predictions = np.stack(predictions, axis=1)
+
+        print(predictions)
 
         # The DNN number with the highest confidence
         # One for each sample
