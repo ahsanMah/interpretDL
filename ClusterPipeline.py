@@ -1,6 +1,7 @@
 # from common_imports import *
 # from helper import *
 import os
+import dill
 import tensorflow as tf
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -8,6 +9,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from multiprocess import Pool
 from multiprocess import get_context
 from time import time
+
 
 # num_procs = 4
 
@@ -101,7 +103,10 @@ class ClusterPipeline:
             "{basename}_{id}.h5".format(basename=self.BASENAME, id=foldnum)
         )
 
-        self.zscalers[foldnum] = ZScaler
+        with open("{basename}_{id}_zscaler.h5".format(
+                   basename=self.BASENAME, id=foldnum), "wb") as pklfile:
+            dill.dump(ZScaler, pklfile)
+
 
         return history, ZScaler
 
@@ -133,7 +138,7 @@ class ClusterPipeline:
 
     
     def runFoldWorker(self, foldnum, train_index, test_index, batch_size, epochs):
-        print("Inside worker:",foldnum)
+        print("Running worker:",foldnum)
         X_train = self.train_set.features.iloc[train_index]
         y_train = self.train_set.labels.iloc[train_index]
         X_test  = self.train_set.features.iloc[test_index]
@@ -143,7 +148,7 @@ class ClusterPipeline:
 
         return (lrp_results, correct_pred_idxs)
 
-    def cross_validation(self, batch_size, epochs, num_folds = 10):
+    def cross_validation(self, batch_size, epochs, num_folds = 10, parallel=True):
         # Populate Zoo here perhaps
         # Use the h5 weight files...
         # self.model_zoo.append(model)
@@ -158,25 +163,27 @@ class ClusterPipeline:
         zoo = []
         results = []
 
-        num_procs = 3
+        num_procs = 4
 
         pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) for fnum, (tr_idx, tst_idx) in enumerate(self.getKFold(n_splits=num_folds))]
          
-        # if __name__ == '__main__':
-        print("Running Pool...")
-        with get_context("spawn").Pool(processes = os.cpu_count()//2) as pool:
-            print("Initialized Pool...")
-            results = pool.starmap(self.runFoldWorker, pool_args)
-            
-            # print(pool_args)
-            # pass
-        # results = workers.starmap(self.runFoldWorker, pool_args)
-        
-        # print("Running Serial Crossvalidation")
-        # for _args in pool_args:
-        #     results.append(runFoldWorker(*_args))
+        if parallel:
+            print("Running Pool...")
+            with get_context("spawn").Pool(processes = os.cpu_count()//2) as pool:
+                print("Initialized Pool...")
+                results = pool.starmap(self.runFoldWorker, pool_args)
+        else:    
+            print("Running Serial Crossvalidation")
+            for _args in pool_args:
+                results.append(self.runFoldWorker(*_args))
 
         print("Runtime: {:.3f}s".format(time()-start_time))
+
+        for lrp_results, correct_idxs in results:
+            cv_lrp_results.extend(lrp_results)
+            testing_indxs.extend(correct_idxs)
+
+        print(cv_lrp_results[-5:], testing_indxs[-5:])
 
         return (cv_lrp_results, testing_indxs)
 
