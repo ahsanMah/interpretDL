@@ -3,23 +3,12 @@
 import os
 import dill
 import tensorflow as tf
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 
-# from multiprocessing import Pool
 from multiprocess import Pool
 from multiprocess import get_context
 from time import time
-
-
-# num_procs = 4
-
-# if __name__ == "__main__":
-#     workers = Pool(processes = os.cpu_count()//2)
-#     print(workers)
-# # else:
-#     POOL = Pool(num_procs)
-#     print("Declared pool worker...")
-
 
 class ClusterPipeline:
     """
@@ -60,6 +49,10 @@ class ClusterPipeline:
     INITFILE = MODELDIR+"init.h5"
     BASENAME = MODELDIR+"dnn"
 
+    # Filenames for storing / caching model params
+    MODELFILE  = BASENAME + "_{id}.h5"
+    SCALERFILE = BASENAME + "_{id}_zscaler.pickle"
+
     def __init__(self, model, train_set, val_set,
                 analyzer="lrp",
                 cluster_algo = "HDBSCAN",
@@ -80,6 +73,7 @@ class ClusterPipeline:
         self.model_zoo = []
         self.zscalers = {}
 
+        self.n_splits = 10
         # Fold counter to keep track of which model is being trained
         # Each fold should train a fresh model and save its weights
         self.foldctr = 0
@@ -99,14 +93,10 @@ class ClusterPipeline:
         history = self.model.fit(X_train, y_train,
                         epochs=epochs, batch_size = batch_size, verbose=verbose)
         
-        self.model.save_weights(
-            "{basename}_{id}.h5".format(basename=self.BASENAME, id=foldnum)
-        )
+        self.model.save_weights(self.MODELFILE.format(id=foldnum))
 
-        with open("{basename}_{id}_zscaler.h5".format(
-                   basename=self.BASENAME, id=foldnum), "wb") as pklfile:
+        with open(self.SCALERFILE.format(id=foldnum), "wb") as pklfile:
             dill.dump(ZScaler, pklfile)
-
 
         return history, ZScaler
 
@@ -183,8 +173,6 @@ class ClusterPipeline:
             cv_lrp_results.extend(lrp_results)
             testing_indxs.extend(correct_idxs)
 
-        print(cv_lrp_results[-5:], testing_indxs[-5:])
-
         return (cv_lrp_results, testing_indxs)
 
     def train_model(self, batch_size=20, epochs=200, cross_validation=False):
@@ -199,7 +187,41 @@ class ClusterPipeline:
             #Plot LRP
         return
 
+    def foldmodel(self, foldnum=0):
+        self.model.load_weights(self.MODELFILE.format(id=foldnum))
+        return self.model
 
+    def load_scalers(self):
+        self.zscalers = []
+        
+        for foldnum in range(self.n_splits):
+            with open(self.SCALERFILE.format(id = foldnum), "rb") as pklfile:
+                self.zscalers.append(dill.load(pklfile))
+
+    def get_predictions(self):
+
+        # Populate zscalers if empty
+        if not self.zscalers: self.load_scalers()
+        
+        #FIXME: If every DNN gives an incorrect output
+
+        predictions = []
+        for i,zscaler in enumerate(self.zscalers):
+            _samples = zscaler.transform(self.val_set.features)
+            model_preds = np.array([(np.argmax(x), np.max(x)) for x in self.foldmodel(i).predict(_samples)])
+            predictions.append(model_preds)
+
+        # Combine all DNN predictions into a matrix
+        predictions = np.stack(predictions, axis=1)
+
+        # The DNN number with the highest confidence
+        # One for each sample
+        best_DNN = np.argmax(predictions[:,:,1], axis=1)
+        best_predictions = predictions[range(len(self.val_set.labels)), best_DNN,0].astype(int)
+
+        return best_predictions, best_DNN
+
+    ### Helpers
     def getKFold(self, train_data=None, n_splits=10):
         from sklearn.model_selection import StratifiedKFold as KFold
         
