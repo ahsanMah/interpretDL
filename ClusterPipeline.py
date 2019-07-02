@@ -2,10 +2,18 @@
 # from helper import *
 import os
 import dill
+import hdbscan
+
 import tensorflow as tf
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
+from sklearn import metrics
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import MinMaxScaler
+from s_dbw import S_Dbw
 from multiprocess import Pool
 from multiprocess import get_context
 from time import time
@@ -70,9 +78,11 @@ class ClusterPipeline:
         self.hot_encoder = self.dfHotEncoder()
         self.hot_encoder.fit(self.train_set.labels)
         self.history = None
-        self.model_zoo = []
         self.zscalers = {}
 
+        self.testing_idxs = []
+        self.correct_preds_bool_arr = []
+        self.lrp_results = []
         self.n_splits = 10
         # Fold counter to keep track of which model is being trained
         # Each fold should train a fresh model and save its weights
@@ -83,6 +93,7 @@ class ClusterPipeline:
         Trains a model using keras API, after scaling the data
         """
         from sklearn.preprocessing import StandardScaler
+        from imblearn.over_sampling import SMOTE
         self.model.load_weights(self.INITFILE)
 
         ZScaler = StandardScaler().fit(X)
@@ -100,7 +111,7 @@ class ClusterPipeline:
 
         return history, ZScaler
 
-    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, foldnum=0):
+    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, X_test=[], y_test=[], foldnum=0):
         # import keras
         import innvestigate
         import innvestigate.utils as iutils
@@ -109,7 +120,8 @@ class ClusterPipeline:
 
         # Getting all the samples that can be correctly predicted
         # Note: Samples have already been scaled
-        all_samples, _labels, correct_pred_idxs, final_acc = self.getCorrectPredictions(model=self.model, ZScaler=ZScaler)
+        all_samples, _labels, correct_pred_idxs, final_acc = self.getCorrectPredictions(model=self.model,
+                                                             samples=X_test, labels=y_test, ZScaler=ZScaler)
 
         # Stripping the softmax activation from the model
         model_w_softmax = self.model
@@ -133,28 +145,21 @@ class ClusterPipeline:
         y_train = self.train_set.labels.iloc[train_index]
         X_test  = self.train_set.features.iloc[test_index]
         y_test = self.train_set.labels.iloc[test_index]
-        final_acc, lrp_results, correct_pred_idxs = self.runDNNAnalysis(X_train, y_train, 
+        final_acc, lrp_results, correct_pred_idxs = self.runDNNAnalysis(X_train, y_train, X_test=X_test, y_test=y_test,
                                                     epochs=epochs, batch_size=batch_size, foldnum=foldnum)
 
-        return (lrp_results, correct_pred_idxs)
+        return (lrp_results, correct_pred_idxs, test_index)
 
     def cross_validation(self, batch_size, epochs, num_folds = 10, parallel=True):
-        # Populate Zoo here perhaps
-        # Use the h5 weight files...
-        # self.model_zoo.append(model)
-        
+        """
+        Runs a 10-Fold cross validation by default
+        """
+
         start_time = time()
         
-        histories = []
-        testing_indxs =[]
-        predictions = []
-        true_labels = []
-        cv_lrp_results = []
-        zoo = []
+        self.lrp_results = []
+        self.correct_preds_bool_arr = []
         results = []
-
-        num_procs = 4
-
         pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) for fnum, (tr_idx, tst_idx) in enumerate(self.getKFold(n_splits=num_folds))]
          
         if parallel:
@@ -169,11 +174,15 @@ class ClusterPipeline:
 
         print("Runtime: {:.3f}s".format(time()-start_time))
 
-        for lrp_results, correct_idxs in results:
-            cv_lrp_results.extend(lrp_results)
-            testing_indxs.extend(correct_idxs)
+        for lrp_results, correct_idxs, test_idxs in results:
+            self.lrp_results.extend(lrp_results)
+            self.correct_preds_bool_arr.extend(correct_idxs)
+            self.testing_idxs.extend(test_idxs)
 
-        return (cv_lrp_results, testing_indxs)
+        print("Correct:", len(self.correct_preds_bool_arr))
+        print("Test Size:", len(self.testing_idxs))
+
+        return (self.lrp_results, self.correct_preds_bool_arr)
 
     def train_model(self, batch_size=20, epochs=200, cross_validation=False):
         
@@ -183,9 +192,30 @@ class ClusterPipeline:
             self.cross_validation(batch_size,epochs)
         else:
             X_train, y_train = self.train_set.features, self.train_set.labels
-            final_acc, lrp_results, correect_preds = self.runDNNAnalysis(X_train, y_train, epochs=epochs, batch_size=batch_size)
+            final_acc, lrp_results, correct_preds = self.runDNNAnalysis(X_train, y_train, epochs=epochs, batch_size=batch_size)
             #Plot LRP
         return
+
+
+    def train_clusterer(self, class_label):
+        '''
+        Expects a class label to cluster
+        This should be the class that the user expects to have subclusters
+        '''
+
+        correct_pred_labels = self.train_set.labels.iloc[self.testing_idxs][self.correct_preds_bool_arr]
+        split_class = correct_pred_labels == class_label
+        split_class_lrp = np.array(self.lrp_results)[split_class]
+
+        data = np.clip(split_class_lrp, 0,None)
+        sdata = MinMaxScaler().fit_transform(data)
+        labels = correct_pred_labels[split_class]
+        cluster_sizes = range(15,301,15)
+
+        scores = clusterPerf(sdata, labels, cluster_sizes)
+        print(scores.idxmin())
+
+        return scores
 
     def foldmodel(self, foldnum=0):
         self.model.load_weights(self.MODELFILE.format(id=foldnum))
@@ -215,7 +245,7 @@ class ClusterPipeline:
         predictions = np.stack(predictions, axis=1)
         
         # Samples with at least one correct predicition
-        valid_samples = (predictions[:,:,0] > 0).any(axis=1)
+        valid_samples = (predictions[:,:,0] > -1).any(axis=1)
         predictions = predictions[valid_samples]
 
         # print("Predictions:", predictions)
@@ -253,8 +283,8 @@ class ClusterPipeline:
 
 
     def getCorrectPredictions(self, model, 
-                              samples=None,
-                              labels=None, ZScaler=None):
+                              samples=[],
+                              labels=[], ZScaler=None):
         '''
         Assumes categorical output from DNN
         Will default to getting correct predcitions from the validation set
@@ -262,7 +292,7 @@ class ClusterPipeline:
         '''
         import numpy as np
         
-        if samples == None and labels==None:
+        if len(samples) == 0 and len(labels) == 0:
             samples = self.val_set.features
             labels = self.val_set.labels
 
@@ -279,17 +309,74 @@ class ClusterPipeline:
         loss_and_metrics = model.evaluate(samples, labels)
         print("Scores on data set: loss={:0.3f} accuracy={:.4f}".format(*loss_and_metrics))
         
-        # correct_predictions = 
+        print("Fold Correct:", len(correct_idxs))
 
         return samples[correct_idxs], labels[correct_idxs], correct_idxs, loss_and_metrics
 
 
 ######## HELPER FUNCTIONS ############
 
-'''
-Expects data to be 2D numpy array
-'''
+def clusterPerf(data, labels, cluster_sizes, plot=False):
+
+    if plot:
+        plt.close("Cluster Comparison")
+        fig, axs = plt.subplots(1+len(cluster_sizes), 1, figsize=(16,8*(1+len(cluster_sizes))), num="Cluster Comparison")
+        plt.title("Cluster Comparison")
+
+        axs[0].scatter(*data.T, s=50, linewidth=0, c=labels, alpha=0.5, cmap="Set1")
+        axs[0].set_title("Original Distribution")
+
+    _metrics = []
+
+    for i,size in enumerate(cluster_sizes):
+        clusterer = hdbscan.HDBSCAN(min_cluster_size=size)
+        clusterer.fit(data)
+        cluster_labels = clusterer.labels_
+
+         ## Number of clusters in labels, ignoring noise if present.
+        num_clusters = cluster_labels.max() + 1
+
+        color_palette = sns.color_palette("bright", num_clusters)
+        cluster_colors = [color_palette[x] if x >= 0
+                          else (0, 0, 0)
+                          for x in clusterer.labels_]
+        cluster_member_colors = [sns.desaturate(x, p) for x, p in
+                                 zip(cluster_colors, clusterer.probabilities_)]
+
+        print(cluster_labels)
+        
+        noise = list(cluster_labels).count(-1)/len(cluster_labels)
+
+        halkidi_s_Dbw = S_Dbw(data, cluster_labels, alg_noise="comb", method='Halkidi',
+                    centr='mean', nearest_centr=True, metric='euclidean')
+        
+        halkidi_ignore_noise = S_Dbw(data, cluster_labels, alg_noise="filter", method='Halkidi',
+                    centr='mean', nearest_centr=True, metric='euclidean')
+        
+        halkidi_bind = S_Dbw(data, cluster_labels, alg_noise="bind", method='Halkidi',
+                    centr='mean', nearest_centr=True, metric='euclidean')
+        
+        sil_score = metrics.silhouette_score(data, cluster_labels, metric="euclidean")
+        
+        _metrics.append([num_clusters,noise,sil_score, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind])
+
+        if plot:
+            axs[i+1].scatter(*data.T, s=50, linewidth=0, c=cluster_member_colors, alpha=0.6)
+            axs[i+1].set_title("Minimum Cluster Size: {}".format(size))
+            axs[i+1].text(0.95,0.95,"Clusters Found: {}".format(num_clusters),
+                        horizontalalignment='right', verticalalignment='top',
+                        fontsize=14, transform=axs[i+1].transAxes)
+
+    if plot: plt.show()
+    
+    scores = pd.DataFrame(_metrics, columns=["Clusters", "Noise", "Silhouette","Halkidi", "Halkidi-Filtered Noise", "Halkidi-Bounded Noise"], index=cluster_sizes)
+    
+    return scores
+
 def calculateEntropy(data, plot=False):
+    '''
+    Expects data to be 2D numpy array
+    '''
     from scipy.stats import entropy
     
     nsamples = len(data)
