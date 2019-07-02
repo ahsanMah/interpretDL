@@ -54,6 +54,7 @@ class ClusterPipeline:
             return self.enc.transform(labels.values.reshape(-1,1))
     
     MODELDIR = "models/"
+    FIGUREDIR = "pipeline_figs/"
     INITFILE = MODELDIR+"init.h5"
     BASENAME = MODELDIR+"dnn"
 
@@ -212,7 +213,7 @@ class ClusterPipeline:
         labels = correct_pred_labels[split_class]
         cluster_sizes = range(15,301,15)
 
-        scores = clusterPerf(sdata, labels, cluster_sizes, plot)
+        scores = self.clusterPerf(sdata, labels, cluster_sizes, plot)
         print(scores.idxmin())
 
         return scores
@@ -316,64 +317,67 @@ class ClusterPipeline:
 
 ######## HELPER FUNCTIONS ############
 
-def clusterPerf(data, labels, cluster_sizes, plot=False):
+    def clusterPerf(self, data, labels, cluster_sizes, plot=False):
 
-    if plot:
-        plt.close("Cluster Comparison")
-        fig, axs = plt.subplots(1+len(cluster_sizes), 1, figsize=(16,8*(1+len(cluster_sizes))), num="Cluster Comparison")
+        # if plot:
+        plt.close("Cluster Comparison") #1+len(cluster_sizes)
+        fig, axs = plt.subplots(1+len(cluster_sizes), 1, figsize=(15,6*(+len(cluster_sizes))), num="Cluster Comparison")
         plt.title("Cluster Comparison")
 
         axs[0].scatter(*data.T, s=50, linewidth=0, c=labels, alpha=0.5, cmap="Set1")
         axs[0].set_title("Original Distribution")
 
-    _metrics = []
+        _metrics = []
 
-    for i,size in enumerate(cluster_sizes):
-        clusterer = hdbscan.HDBSCAN(min_cluster_size=size)
-        clusterer.fit(data)
-        cluster_labels = clusterer.labels_
+        for i,size in enumerate(cluster_sizes):
+            clusterer = hdbscan.HDBSCAN(min_cluster_size=size)
+            clusterer.fit(data)
+            cluster_labels = clusterer.labels_
 
-         ## Number of clusters in labels, ignoring noise if present.
-        num_clusters = cluster_labels.max() + 1
+            ## Number of clusters in labels, ignoring noise if present.
+            num_clusters = cluster_labels.max() + 1
 
-        color_palette = sns.color_palette("bright", num_clusters)
-        cluster_colors = [color_palette[x] if x >= 0
-                          else (0, 0, 0)
-                          for x in clusterer.labels_]
-        cluster_member_colors = [sns.desaturate(x, p) for x, p in
-                                 zip(cluster_colors, clusterer.probabilities_)]
+            color_palette = sns.color_palette("bright", num_clusters)
+            cluster_colors = [color_palette[x] if x >= 0
+                            else (0, 0, 0)
+                            for x in clusterer.labels_]
+            cluster_member_colors = [sns.desaturate(x, p) for x, p in
+                                    zip(cluster_colors, clusterer.probabilities_)]
 
-        # print(cluster_labels)
-        noise, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind, sil_score = [np.NaN]*5
+            # print(cluster_labels)
+            noise, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind, sil_score = [np.NaN]*5
 
-        noise = list(cluster_labels).count(-1)/len(cluster_labels)
-        
-        if num_clusters > 1:
-            halkidi_s_Dbw = S_Dbw(data, cluster_labels, alg_noise="comb", method='Halkidi',
-                        centr='mean', nearest_centr=True, metric='euclidean')
+            noise = list(cluster_labels).count(-1)/len(cluster_labels)
             
-            halkidi_ignore_noise = S_Dbw(data, cluster_labels, alg_noise="filter", method='Halkidi',
-                        centr='mean', nearest_centr=True, metric='euclidean')
+            if num_clusters > 1:
+                halkidi_s_Dbw = S_Dbw(data, cluster_labels, alg_noise="comb", method='Halkidi',
+                            centr='mean', nearest_centr=True, metric='euclidean')
+                
+                halkidi_ignore_noise = S_Dbw(data, cluster_labels, alg_noise="filter", method='Halkidi',
+                            centr='mean', nearest_centr=True, metric='euclidean')
+                
+                halkidi_bind = S_Dbw(data, cluster_labels, alg_noise="bind", method='Halkidi',
+                            centr='mean', nearest_centr=True, metric='euclidean')
+                
+                sil_score = metrics.silhouette_score(data, cluster_labels, metric="euclidean")
             
-            halkidi_bind = S_Dbw(data, cluster_labels, alg_noise="bind", method='Halkidi',
-                        centr='mean', nearest_centr=True, metric='euclidean')
-            
-            sil_score = metrics.silhouette_score(data, cluster_labels, metric="euclidean")
-        
-        _metrics.append([num_clusters,noise,sil_score, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind])
+            _metrics.append([num_clusters,noise,sil_score, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind])
 
-        if plot:
+            # if plot:
             axs[i+1].scatter(*data.T, s=50, linewidth=0, c=cluster_member_colors, alpha=0.6)
             axs[i+1].set_title("Minimum Cluster Size: {}".format(size))
             axs[i+1].text(0.95,0.95,"Clusters Found: {}".format(num_clusters),
                         horizontalalignment='right', verticalalignment='top',
                         fontsize=14, transform=axs[i+1].transAxes)
 
-    if plot: plt.show()
-    
-    scores = pd.DataFrame(_metrics, columns=["Clusters", "Noise", "Silhouette","Halkidi", "Halkidi-Filtered Noise", "Halkidi-Bounded Noise"], index=cluster_sizes)
-    
-    return scores
+        plt.tight_layout()
+        if plot: plt.show()
+
+        plt.savefig(self.FIGUREDIR+"cluster_perf_comp.png")
+        
+        scores = pd.DataFrame(_metrics, columns=["Clusters", "Noise", "Silhouette","Halkidi", "Halkidi-Filtered Noise", "Halkidi-Bounded Noise"], index=cluster_sizes)
+        
+        return scores
 
 def calculateEntropy(data, plot=False):
     '''
