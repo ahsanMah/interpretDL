@@ -184,12 +184,12 @@ class ClusterPipeline:
 
         return (self.lrp_results, self.correct_preds_bool_arr)
 
-    def train_model(self, batch_size=20, epochs=200, cross_validation=False):
+    def train_model(self, batch_size=20, epochs=200, cross_validation=False, parallel=True):
         
         self.model_zoo = []
 
         if cross_validation:
-            self.cross_validation(batch_size,epochs)
+            self.cross_validation(batch_size,epochs, parallel=parallel)
         else:
             X_train, y_train = self.train_set.features, self.train_set.labels
             final_acc, lrp_results, correct_preds = self.runDNNAnalysis(X_train, y_train, epochs=epochs, batch_size=batch_size)
@@ -197,7 +197,7 @@ class ClusterPipeline:
         return
 
 
-    def train_clusterer(self, class_label):
+    def train_clusterer(self, class_label, plot=False):
         '''
         Expects a class label to cluster
         This should be the class that the user expects to have subclusters
@@ -212,7 +212,7 @@ class ClusterPipeline:
         labels = correct_pred_labels[split_class]
         cluster_sizes = range(15,301,15)
 
-        scores = clusterPerf(sdata, labels, cluster_sizes)
+        scores = clusterPerf(sdata, labels, cluster_sizes, plot)
         print(scores.idxmin())
 
         return scores
@@ -343,20 +343,22 @@ def clusterPerf(data, labels, cluster_sizes, plot=False):
         cluster_member_colors = [sns.desaturate(x, p) for x, p in
                                  zip(cluster_colors, clusterer.probabilities_)]
 
-        print(cluster_labels)
-        
-        noise = list(cluster_labels).count(-1)/len(cluster_labels)
+        # print(cluster_labels)
+        noise, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind, sil_score = [np.NaN]*5
 
-        halkidi_s_Dbw = S_Dbw(data, cluster_labels, alg_noise="comb", method='Halkidi',
-                    centr='mean', nearest_centr=True, metric='euclidean')
+        noise = list(cluster_labels).count(-1)/len(cluster_labels)
         
-        halkidi_ignore_noise = S_Dbw(data, cluster_labels, alg_noise="filter", method='Halkidi',
-                    centr='mean', nearest_centr=True, metric='euclidean')
-        
-        halkidi_bind = S_Dbw(data, cluster_labels, alg_noise="bind", method='Halkidi',
-                    centr='mean', nearest_centr=True, metric='euclidean')
-        
-        sil_score = metrics.silhouette_score(data, cluster_labels, metric="euclidean")
+        if num_clusters > 1:
+            halkidi_s_Dbw = S_Dbw(data, cluster_labels, alg_noise="comb", method='Halkidi',
+                        centr='mean', nearest_centr=True, metric='euclidean')
+            
+            halkidi_ignore_noise = S_Dbw(data, cluster_labels, alg_noise="filter", method='Halkidi',
+                        centr='mean', nearest_centr=True, metric='euclidean')
+            
+            halkidi_bind = S_Dbw(data, cluster_labels, alg_noise="bind", method='Halkidi',
+                        centr='mean', nearest_centr=True, metric='euclidean')
+            
+            sil_score = metrics.silhouette_score(data, cluster_labels, metric="euclidean")
         
         _metrics.append([num_clusters,noise,sil_score, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind])
 
