@@ -71,6 +71,7 @@ class ClusterPipeline:
         data: [training_data, validation_data]
         """
         self.model = model
+        self.clusterer = None
         self.model.save_weights(self.INITFILE)
 
         self.train_set = self.Dataset(*train_set)
@@ -85,6 +86,9 @@ class ClusterPipeline:
         self.correct_preds_bool_arr = []
         self.lrp_results = []
         self.n_splits = 10
+
+        self.dnn_analyzers = []
+        self.val_set_lrp = []
         # Fold counter to keep track of which model is being trained
         # Each fold should train a fresh model and save its weights
         self.foldctr = 0
@@ -186,8 +190,6 @@ class ClusterPipeline:
         return (self.lrp_results, self.correct_preds_bool_arr)
 
     def train_model(self, batch_size=20, epochs=200, cross_validation=False, parallel=True):
-        
-        self.model_zoo = []
 
         if cross_validation:
             self.cross_validation(batch_size,epochs, parallel=parallel)
@@ -211,12 +213,44 @@ class ClusterPipeline:
         data = np.clip(split_class_lrp, 0,None)
         sdata = MinMaxScaler().fit_transform(data)
         labels = correct_pred_labels[split_class]
+        
         cluster_sizes = range(15,301,15)
-
         scores = self.clusterPerf(sdata, labels, cluster_sizes, plot)
+        print("Minimum Size:")
         print(scores.idxmin())
+        
+        minsize = int(scores["Halkidi-Filtered Noise"].idxmin())
+        self.clusterer = hdbscan.HDBSCAN(min_cluster_size=minsize, prediction_data=True)
+        self.clusterer.fit(sdata)
 
         return scores
+
+    def predict_cluster(self, lrp_data, plot=False):
+        data  = np.clip(lrp_data,0,None)
+        sdata = MinMaxScaler().fit_transform(data)
+        cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, sdata)
+
+        plt.close("Validation Set Clusters")
+        fig, axs = plt.subplots(1, figsize=(15,6), num="Validation Set Clusters")
+        plt.title("Validation Set Clusters")
+
+         ## Number of clusters in labels, ignoring noise if present.
+        num_clusters = cluster_labels.max() + 1
+
+        color_palette = sns.color_palette("bright", num_clusters)
+        cluster_colors = [color_palette[x] if x >= 0
+                          else (0, 0, 0) 
+                          for x in cluster_labels]
+        cluster_member_colors = [sns.desaturate(x, p) for x, p in
+                                 zip(cluster_colors, strengths)]
+
+        axs.scatter(*sdata.T, c=cluster_member_colors, alpha=0.6)
+        # plt.colorbar()
+
+        if plot: plt.show()
+        plt.savefig(self.FIGUREDIR + "prediction_cluster.png")
+
+        return cluster_labels, strengths
 
     def foldmodel(self, foldnum=0):
         self.model.load_weights(self.MODELFILE.format(id=foldnum))
@@ -260,6 +294,66 @@ class ClusterPipeline:
 
         return best_predictions, best_DNN
 
+    def load_analyzers(self):
+        import innvestigate
+        import innvestigate.utils as iutils
+
+        self.dnn_analyzers = []
+
+        for dnn_idx in range(self.n_splits):
+            model_w_softmax = self.foldmodel(dnn_idx)
+            model_wo_softmax = iutils.keras.graph.model_wo_softmax(model_w_softmax)
+            # Creating an analyzer
+            self.dnn_analyzers.append(
+                innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
+                model=model_wo_softmax, epsilon=1e-3))
+
+        print("Loaded LRP models...")
+        return 
+
+    def get_validation_lrp(self):
+
+        if not self.dnn_analyzers: self.load_analyzers()
+        analyze = lambda idx,x: self.dnn_analyzers[idx].analyze(x.reshape(1,-1))
+        best_predictions, best_DNN = self.get_predictions()
+
+        self.val_set_lrp = []
+        for dnn_idx, sample in zip(best_DNN, self.val_set.features.values):
+            self.val_set_lrp.extend(analyze(dnn_idx,sample))
+
+        return self.val_set_lrp
+    
+    # def plot_clusters()
+
+    def get_validation_clusters(self):
+
+        if not self.val_set_lrp: self.get_validation_lrp()
+        
+        cluster_labels, strengths = self.predict_cluster(self.val_set_lrp, plot=True)
+
+        # plt.close("Validation Set Clusters")
+        # fig, axs = plt.subplots(1, 1, figsize=(15,6), num="Cluster Comparison")
+        # plt.title("Validation Set Clusters")
+
+        #  ## Number of clusters in labels, ignoring noise if present.
+        # num_clusters = cluster_labels.max() + 1
+
+        # color_palette = sns.color_palette("bright", num_clusters)
+        # cluster_colors = [color_palette[x] if x >= 0
+        #                   else (0, 0, 0) 
+        #                   for x in cluster_labels]
+        # cluster_member_colors = [sns.desaturate(x, p) for x, p in
+        #                          zip(cluster_colors, strengths)]
+
+        # axs[0].scatter(*sdata.T, c=cluster_member_colors, alpha=0.6)
+        # plt.colorbar()
+
+        # if plot: plt.show()
+        # plt.savefig(self.FIGUREDIR + "prediction_cluster.png")
+
+        return 
+
+    
     ### Helpers
     def getKFold(self, train_data=None, n_splits=10):
         from sklearn.model_selection import StratifiedKFold as KFold
@@ -374,6 +468,7 @@ class ClusterPipeline:
         if plot: plt.show()
 
         plt.savefig(self.FIGUREDIR+"cluster_perf_comp.png")
+        plt.close("Cluster Comparison")
         
         scores = pd.DataFrame(_metrics, columns=["Clusters", "Noise", "Silhouette","Halkidi", "Halkidi-Filtered Noise", "Halkidi-Bounded Noise"], index=cluster_sizes)
         
