@@ -63,6 +63,7 @@ class ClusterPipeline:
     SCALERFILE = BASENAME + "_{id}_zscaler.pickle"
 
     def __init__(self, model, train_set, val_set,
+                target_class=0,
                 analyzer="lrp",
                 cluster_algo = "HDBSCAN",
                 linearClassifier="SVM"):
@@ -76,6 +77,7 @@ class ClusterPipeline:
 
         self.train_set = self.Dataset(*train_set)
         self.val_set = self.Dataset(*val_set)
+        self.target_class = target_class
 
         self.hot_encoder = self.dfHotEncoder()
         self.hot_encoder.fit(self.train_set.labels)
@@ -85,6 +87,9 @@ class ClusterPipeline:
         self.testing_idxs = []
         self.correct_preds_bool_arr = []
         self.lrp_results = []
+        
+        #  Mask for retreiving validation samples that were predicted correctly
+        self.val_pred_mask = []
         self.n_splits = 10
 
         self.dnn_analyzers = []
@@ -230,9 +235,9 @@ class ClusterPipeline:
         sdata = MinMaxScaler().fit_transform(data)
         cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, sdata)
 
-        plt.close("Validation Set Clusters")
-        fig, axs = plt.subplots(1, figsize=(15,6), num="Validation Set Clusters")
-        plt.title("Validation Set Clusters")
+        plt.close("Validation Relevance")
+        fig, axs = plt.subplots(1, figsize=(15,6), num="Validation Relevance")
+        plt.title("Validation Relevance")
 
          ## Number of clusters in labels, ignoring noise if present.
         num_clusters = cluster_labels.max() + 1
@@ -248,7 +253,7 @@ class ClusterPipeline:
         # plt.colorbar()
 
         if plot: plt.show()
-        plt.savefig(self.FIGUREDIR + "prediction_cluster.png")
+        plt.savefig(self.FIGUREDIR + "prediction_lrp.png")
 
         return cluster_labels, strengths
 
@@ -280,8 +285,9 @@ class ClusterPipeline:
         predictions = np.stack(predictions, axis=1)
         
         # Samples with at least one correct predicition
-        valid_samples = (predictions[:,:,0] > -1).any(axis=1)
-        predictions = predictions[valid_samples]
+        # Note: Samples incorrectly predicted by all DNNs are dropped
+        self.val_pred_mask =  (predictions[:,:,0] > -1).any(axis=1)
+        predictions = predictions[self.val_pred_mask]
 
         # print("Predictions:", predictions)
 
@@ -312,25 +318,37 @@ class ClusterPipeline:
         return 
 
     def get_validation_lrp(self):
-
+       
         if not self.dnn_analyzers: self.load_analyzers()
         analyze = lambda idx,x: self.dnn_analyzers[idx].analyze(x.reshape(1,-1))
         best_predictions, best_DNN = self.get_predictions()
 
+        #FIXME: Only need to save bestDNN, 
+        # "best predicitons are the same as val_set.labels"
+
+        # Only consider the samples from the class(es) which are expected to have subclusters
+        target_class = best_predictions == self.target_class
+        class_samples = self.val_set.features.values[self.val_pred_mask][target_class]
+        class_DNN = best_DNN[best_predictions == self.target_class]
+
         self.val_set_lrp = []
-        for dnn_idx, sample in zip(best_DNN, self.val_set.features.values):
+        for dnn_idx, sample in zip(class_DNN, class_samples):
             self.val_set_lrp.extend(analyze(dnn_idx,sample))
 
         return self.val_set_lrp
     
     # def plot_clusters()
 
-    def get_validation_clusters(self):
+    def get_validation_clusters(self, plot=False):
 
         if not self.val_set_lrp: self.get_validation_lrp()
         
         cluster_labels, strengths = self.predict_cluster(self.val_set_lrp, plot=True)
 
+        # class_samples = self.val_set.features.values[best_predictions == 0]
+        # target_class = self.val_set.labels[self.val_pred_mask] == self.target_class
+        # # Plot samples with cluster labels
+        
         # plt.close("Validation Set Clusters")
         # fig, axs = plt.subplots(1, 1, figsize=(15,6), num="Cluster Comparison")
         # plt.title("Validation Set Clusters")
@@ -345,7 +363,7 @@ class ClusterPipeline:
         # cluster_member_colors = [sns.desaturate(x, p) for x, p in
         #                          zip(cluster_colors, strengths)]
 
-        # axs[0].scatter(*sdata.T, c=cluster_member_colors, alpha=0.6)
+        # axs[0].scatter(*class_samples.T, c=cluster_member_colors)
         # plt.colorbar()
 
         # if plot: plt.show()
