@@ -146,7 +146,7 @@ Returns 8 gaussian blobs surrounding one center blob
        labels: Only center vs other labels (0,1) 
 modded_labels: The labels for all 9 classes
 '''
-def simulate_blobs(class_size = 200):
+def simulate_blobs(class_size = 200, plot=False):
     
     import matplotlib.pyplot as plt
     from sklearn.preprocessing import OneHotEncoder
@@ -160,15 +160,16 @@ def simulate_blobs(class_size = 200):
     X, y = make_blobs(n_samples=n_samples, centers=centers, n_features=2,
                       cluster_std=0.1, shuffle=False, random_state=42)
     
-    plt.close("Original Distribution")
     df = DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
-    fig, ax = plt.subplots(num= "Original Distribution")
-    colors = {0:'red', 1:'blue'}
     
-    df.plot(ax=ax,kind="scatter", x='x', y='y',c="label", cmap= "Paired")
-    # plt.colorbar()
-    
-    plt.show()
+    if plot:
+        plt.close("Original Distribution")    
+        fig, ax = plt.subplots(num= "Original Distribution")
+        colors = {0:'red', 1:'blue'}
+        
+        df.plot(ax=ax,kind="scatter", x='x', y='y',c="label", cmap= "Paired")
+        # plt.colorbar()
+        plt.show()
     
     original_labels = df["label"].copy()
     modded_samples = df[["x","y"]].copy()
