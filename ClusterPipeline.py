@@ -4,7 +4,7 @@ import os
 import dill
 import hdbscan
 
-import tensorflow as tf
+# import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -18,6 +18,8 @@ from s_dbw import S_Dbw
 from multiprocess import Pool
 from multiprocess import get_context
 from time import time
+
+RANDOM_STATE = 42
 
 class ClusterPipeline:
     """
@@ -52,7 +54,7 @@ class ClusterPipeline:
             return self
         
         def transform(self, labels):
-            return self.enc.transform(labels.values.reshape(-1,1))
+            return self.enc.transform(np.array(labels).reshape(-1,1))
     
     MODELDIR = "models/"
     FIGUREDIR = "pipeline_figs/"
@@ -105,9 +107,11 @@ class ClusterPipeline:
         self.model.load_weights(self.INITFILE)
 
         ZScaler = StandardScaler().fit(X)
-        
         X_train = ZScaler.transform(X)
-        y_train = self.hot_encoder.transform(y)
+        
+        X_train,y_train = SMOTE(random_state=RANDOM_STATE).fit_resample(X_train,y) # Both are np arrays now
+        y_train = self.hot_encoder.transform(y_train)
+        
 
         history = self.model.fit(X_train, y_train,
                         epochs=epochs, batch_size = batch_size, verbose=verbose)
@@ -304,8 +308,10 @@ class ClusterPipeline:
         return best_predictions, best_DNN
 
     def load_analyzers(self):
-        import innvestigate
+        print("Loading LRP Analyzers...")
+        
         import innvestigate.utils as iutils
+        import innvestigate
 
         self.dnn_analyzers = []
 
@@ -317,7 +323,7 @@ class ClusterPipeline:
                 innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
                 model=model_wo_softmax, epsilon=1e-3))
 
-        print("Loaded LRP models...")
+        print("Done!")
         return 
 
     def get_validation_lrp(self):
