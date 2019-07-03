@@ -13,6 +13,7 @@ import pandas as pd
 from sklearn import metrics
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import MinMaxScaler
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from s_dbw import S_Dbw
 from multiprocess import Pool
 from multiprocess import get_context
@@ -94,9 +95,6 @@ class ClusterPipeline:
 
         self.dnn_analyzers = []
         self.val_set_lrp = []
-        # Fold counter to keep track of which model is being trained
-        # Each fold should train a fresh model and save its weights
-        self.foldctr = 0
 
     def train(self, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=0, foldnum=0):
         """
@@ -219,7 +217,7 @@ class ClusterPipeline:
         sdata = MinMaxScaler().fit_transform(data)
         labels = correct_pred_labels[split_class]
         
-        cluster_sizes = range(15,301,15)
+        cluster_sizes = range(15,201,15)
         scores = self.clusterPerf(sdata, labels, cluster_sizes, plot)
         print("Minimum Size:")
         print(scores.idxmin())
@@ -237,6 +235,8 @@ class ClusterPipeline:
 
         plt.close("Validation Relevance")
         fig, axs = plt.subplots(1, figsize=(15,6), num="Validation Relevance")
+        # divider = make_axes_locatable(axs)
+        # cax = divider.append_axes('right', size='3.5%', pad=0.5)
         plt.title("Validation Relevance")
 
          ## Number of clusters in labels, ignoring noise if present.
@@ -249,8 +249,10 @@ class ClusterPipeline:
         cluster_member_colors = [sns.desaturate(x, p) for x, p in
                                  zip(cluster_colors, strengths)]
 
-        axs.scatter(*sdata.T, c=cluster_member_colors, alpha=0.6)
-        # plt.colorbar()
+        _mappable = axs.scatter(*sdata.T, c=cluster_member_colors, s=10, alpha=0.7)
+        
+        # Doesnt work properly
+        # fig.colorbar(_mappable, cax=cax, orientation='vertical')
 
         plt.savefig(self.FIGUREDIR + "prediction_lrp.png")
         if plot: plt.show()
@@ -369,8 +371,7 @@ class ClusterPipeline:
 
         if plot: plt.show()
 
-        return 
-
+        return class_samples, cluster_labels
     
     ### Helpers
     def getKFold(self, train_data=None, n_splits=10):
