@@ -252,8 +252,8 @@ class ClusterPipeline:
         axs.scatter(*sdata.T, c=cluster_member_colors, alpha=0.6)
         # plt.colorbar()
 
-        if plot: plt.show()
         plt.savefig(self.FIGUREDIR + "prediction_lrp.png")
+        if plot: plt.show()
 
         return cluster_labels, strengths
 
@@ -297,7 +297,8 @@ class ClusterPipeline:
         if len(predictions)>0:
             best_DNN = np.argmax(predictions[:,:,1], axis=1)
             best_predictions = predictions[range(predictions.shape[0]), best_DNN,0].astype(int)
-
+        
+        #Note: Best predicitons are the same as val_set.labels[self.val_pred_mask]
         return best_predictions, best_DNN
 
     def load_analyzers(self):
@@ -323,9 +324,6 @@ class ClusterPipeline:
         analyze = lambda idx,x: self.dnn_analyzers[idx].analyze(x.reshape(1,-1))
         best_predictions, best_DNN = self.get_predictions()
 
-        #FIXME: Only need to save bestDNN, 
-        # "best predicitons are the same as val_set.labels"
-
         # Only consider the samples from the class(es) which are expected to have subclusters
         target_class = best_predictions == self.target_class
         class_samples = self.val_set.features.values[self.val_pred_mask][target_class]
@@ -343,31 +341,33 @@ class ClusterPipeline:
 
         if not self.val_set_lrp: self.get_validation_lrp()
         
-        cluster_labels, strengths = self.predict_cluster(self.val_set_lrp, plot=True)
+        cluster_labels, strengths = self.predict_cluster(self.val_set_lrp)
 
-        # class_samples = self.val_set.features.values[best_predictions == 0]
-        # target_class = self.val_set.labels[self.val_pred_mask] == self.target_class
-        # # Plot samples with cluster labels
+        target_class = self.val_set.labels[self.val_pred_mask] == self.target_class
+        class_samples = self.val_set.features.values[self.val_pred_mask][target_class]
         
-        # plt.close("Validation Set Clusters")
-        # fig, axs = plt.subplots(1, 1, figsize=(15,6), num="Cluster Comparison")
-        # plt.title("Validation Set Clusters")
+        # Plot samples with cluster labels
+        
+        plt.close("Validation Set Clusters")
+        fig, axs = plt.subplots(1, 1, figsize=(15,6), num="Validation Set Clusters")
+        plt.title("Validation Set Clusters")
 
-        #  ## Number of clusters in labels, ignoring noise if present.
-        # num_clusters = cluster_labels.max() + 1
+         ## Number of clusters in labels, ignoring noise if present.
+        num_clusters = cluster_labels.max() + 1
 
-        # color_palette = sns.color_palette("bright", num_clusters)
-        # cluster_colors = [color_palette[x] if x >= 0
-        #                   else (0, 0, 0) 
-        #                   for x in cluster_labels]
-        # cluster_member_colors = [sns.desaturate(x, p) for x, p in
-        #                          zip(cluster_colors, strengths)]
+        color_palette = sns.color_palette("bright", num_clusters)
+        cluster_colors = [color_palette[x] if x >= 0
+                          else (0, 0, 0) 
+                          for x in cluster_labels]
+        cluster_member_colors = [sns.desaturate(x, p) for x, p in
+                                 zip(cluster_colors, strengths)]
 
-        # axs[0].scatter(*class_samples.T, c=cluster_member_colors)
+        axs.scatter(*class_samples.T, c=cluster_member_colors)
         # plt.colorbar()
 
-        # if plot: plt.show()
-        # plt.savefig(self.FIGUREDIR + "prediction_cluster.png")
+        plt.savefig(self.FIGUREDIR + "prediction_cluster.png")
+
+        if plot: plt.show()
 
         return 
 
