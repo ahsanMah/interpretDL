@@ -2,6 +2,7 @@
 **/.DS_Store
 .vscode
 models/
+pipeline_figs/
 
 
 # gitignore template for Jupyter Notebooks
