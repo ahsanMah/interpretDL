@@ -108,10 +108,8 @@ class ClusterPipeline:
 
         ZScaler = StandardScaler().fit(X)
         X_train = ZScaler.transform(X)
-        
-        X_train,y_train = SMOTE(random_state=RANDOM_STATE).fit_resample(X_train,y) # Both are np arrays now
+        X_train,y_train = SMOTE(random_state=RANDOM_STATE).fit_resample(X_train,np.ravel(y)) # Both are np arrays now
         y_train = self.hot_encoder.transform(y_train)
-        
 
         history = self.model.fit(X_train, y_train,
                         epochs=epochs, batch_size = batch_size, verbose=verbose)
@@ -172,7 +170,8 @@ class ClusterPipeline:
         self.lrp_results = []
         self.correct_preds_bool_arr = []
         results = []
-        pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) for fnum, (tr_idx, tst_idx) in enumerate(self.getKFold(n_splits=num_folds))]
+        pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) 
+                      for fnum, (tr_idx, tst_idx) in enumerate(self.getKFold(n_splits=num_folds))]
          
         if parallel:
             print("Running Pool...")
@@ -191,7 +190,7 @@ class ClusterPipeline:
             self.correct_preds_bool_arr.extend(correct_idxs)
             self.testing_idxs.extend(test_idxs)
 
-        print("Correct:", len(self.correct_preds_bool_arr))
+        print("Correct:", self.correct_preds_bool_arr.count(True))
         print("Test Size:", len(self.testing_idxs))
 
         return (self.lrp_results, self.correct_preds_bool_arr)
@@ -321,7 +320,7 @@ class ClusterPipeline:
             # Creating an analyzer
             self.dnn_analyzers.append(
                 innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
-                model=model_wo_softmax, epsilon=1e-3))
+                model=moZdel_wo_softmax, epsilon=1e-3))
 
         print("Done!")
         return 
@@ -429,7 +428,7 @@ class ClusterPipeline:
         loss_and_metrics = model.evaluate(samples, labels)
         print("Scores on data set: loss={:0.3f} accuracy={:.4f}".format(*loss_and_metrics))
         
-        print("Fold Correct:", len(correct_idxs))
+        print("Fold Correct:", correct_idxs.sum())
 
         return samples[correct_idxs], labels[correct_idxs], correct_idxs, loss_and_metrics
 
