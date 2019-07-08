@@ -3,6 +3,7 @@
 import os
 import dill
 import hdbscan
+import umap
 
 # import tensorflow as tf
 import numpy as np
@@ -67,6 +68,7 @@ class ClusterPipeline:
 
     def __init__(self, model, train_set, val_set,
                 target_class=0,
+                reducer=umap.UMAP(random_state=42),
                 analyzer="lrp",
                 cluster_algo = "HDBSCAN",
                 linearClassifier="SVM"):
@@ -77,6 +79,7 @@ class ClusterPipeline:
         self.model = model
         self.clusterer = None
         self.model.save_weights(self.INITFILE)
+        self.reducer = reducer
 
         self.train_set = self.Dataset(*train_set)
         self.val_set = self.Dataset(*val_set)
@@ -210,7 +213,7 @@ class ClusterPipeline:
         return
 
 
-    def train_clusterer(self, class_label, plot=False):
+    def train_clusterer(self, class_label, min_cluster_sizes=[5,10,15], plot=False):
         '''
         Expects a class label to cluster
         This should be the class that the user expects to have subclusters
@@ -224,45 +227,51 @@ class ClusterPipeline:
         sdata = MinMaxScaler().fit_transform(data)
         labels = correct_pred_labels[split_class]
         
-        cluster_sizes = range(15,201,15)
-        scores = self.clusterPerf(sdata, labels, cluster_sizes, plot)
+        self.reducer = self.reducer.fit(sdata)
+        embeddings = self.reducer.transform(sdata)
+
+        scores = self.clusterPerf(embeddings, labels, min_cluster_sizes, plot)
         print("Minimum Size:")
         print(scores.idxmin())
         
         minsize = int(scores["Halkidi-Filtered Noise"].idxmin())
         self.clusterer = hdbscan.HDBSCAN(min_cluster_size=minsize, prediction_data=True)
-        self.clusterer.fit(sdata)
+        self.clusterer.fit(embeddings)
 
         return scores
+        
 
     def predict_cluster(self, lrp_data, plot=False):
         data  = np.clip(lrp_data,0,None)
         sdata = MinMaxScaler().fit_transform(data)
-        cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, sdata)
+        embeddings=self.reducer.transform(sdata)
 
-        plt.close("Validation Relevance")
-        fig, axs = plt.subplots(1, figsize=(15,6), num="Validation Relevance")
-        # divider = make_axes_locatable(axs)
-        # cax = divider.append_axes('right', size='3.5%', pad=0.5)
-        plt.title("Validation Relevance")
+        cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, embeddings)
 
-         ## Number of clusters in labels, ignoring noise if present.
-        num_clusters = cluster_labels.max() + 1
+        if plot:
+            plt.close("Validation Relevance")
+            fig, axs = plt.subplots(1, figsize=(15,6), num="Validation Relevance")
+            # divider = make_axes_locatable(axs)
+            # cax = divider.append_axes('right', size='3.5%', pad=0.5)
+            plt.title("Validation Relevance")
 
-        color_palette = sns.color_palette("bright", num_clusters)
-        cluster_colors = [color_palette[x] if x >= 0
-                          else (0, 0, 0) 
-                          for x in cluster_labels]
-        cluster_member_colors = [sns.desaturate(x, p) for x, p in
-                                 zip(cluster_colors, strengths)]
+            ## Number of clusters in labels, ignoring noise if present.
+            num_clusters = cluster_labels.max() + 1
 
-        _mappable = axs.scatter(*sdata.T, c=cluster_member_colors, s=10, alpha=0.7)
-        
-        # Doesnt work properly
-        # fig.colorbar(_mappable, cax=cax, orientation='vertical')
+            color_palette = sns.color_palette("bright", num_clusters)
+            cluster_colors = [color_palette[x] if x >= 0
+                            else (0, 0, 0) 
+                            for x in cluster_labels]
+            cluster_member_colors = [sns.desaturate(x, p) for x, p in
+                                    zip(cluster_colors, strengths)]
 
-        plt.savefig(self.FIGUREDIR + "prediction_lrp.png")
-        if plot: plt.show()
+            _mappable = axs.scatter(*sdata.T, c=cluster_member_colors, s=10, alpha=0.7)
+            
+            # Doesnt work properly
+            # fig.colorbar(_mappable, cax=cax, orientation='vertical')
+
+            plt.savefig(self.FIGUREDIR + "prediction_lrp.png")
+            plt.show()
 
         return cluster_labels, strengths
 
@@ -285,7 +294,7 @@ class ClusterPipeline:
         predictions = []
         for i,zscaler in enumerate(self.zscalers):
             _samples = zscaler.transform(self.val_set.features)
-            model_preds = np.array([(np.argmax(x), np.max(x)) for x in self.foldmodel(i).predict(_samples)])     
+            model_preds = np.array([(np.argmax(x), np.max(x)) for x in self.foldmodel(i).predict(_samples)])
             incorrect = model_preds[:,0] != self.val_set.labels
             model_preds[incorrect] = -1
             predictions.append(model_preds)
@@ -324,7 +333,7 @@ class ClusterPipeline:
             # Creating an analyzer
             self.dnn_analyzers.append(
                 innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
-                model=moZdel_wo_softmax, epsilon=1e-3))
+                model=model_wo_softmax, epsilon=1e-3))
 
         print("Done!")
         return 
@@ -358,27 +367,27 @@ class ClusterPipeline:
         class_samples = self.val_set.features.values[self.val_pred_mask][target_class]
         
         # Plot samples with cluster labels
-        
-        plt.close("Validation Set Clusters")
-        fig, axs = plt.subplots(1, 1, figsize=(15,6), num="Validation Set Clusters")
-        plt.title("Validation Set Clusters")
+        if plot:
+            plt.close("Validation Set Clusters")
+            fig, axs = plt.subplots(1, 1, figsize=(15,6), num="Validation Set Clusters")
+            plt.title("Validation Set Clusters")
 
-         ## Number of clusters in labels, ignoring noise if present.
-        num_clusters = cluster_labels.max() + 1
+            ## Number of clusters in labels, ignoring noise if present.
+            num_clusters = cluster_labels.max() + 1
 
-        color_palette = sns.color_palette("bright", num_clusters)
-        cluster_colors = [color_palette[x] if x >= 0
-                          else (0, 0, 0) 
-                          for x in cluster_labels]
-        cluster_member_colors = [sns.desaturate(x, p) for x, p in
-                                 zip(cluster_colors, strengths)]
+            color_palette = sns.color_palette("bright", num_clusters)
+            cluster_colors = [color_palette[x] if x >= 0
+                            else (0, 0, 0) 
+                            for x in cluster_labels]
+            cluster_member_colors = [sns.desaturate(x, p) for x, p in
+                                    zip(cluster_colors, strengths)]
 
-        axs.scatter(*class_samples.T, c=cluster_member_colors)
-        # plt.colorbar()
+            axs.scatter(*class_samples.T, c=cluster_member_colors)
+            # plt.colorbar()
 
-        plt.savefig(self.FIGUREDIR + "prediction_cluster.png")
+            plt.savefig(self.FIGUREDIR + "prediction_cluster.png")
 
-        if plot: plt.show()
+            if plot: plt.show()
 
         return class_samples, cluster_labels
     
@@ -440,14 +449,16 @@ class ClusterPipeline:
 ######## HELPER FUNCTIONS ############
 
     def clusterPerf(self, data, labels, cluster_sizes, plot=False):
+        ii32 = np.iinfo(np.int32)
+        
+        # FIXME: Assumes 2D data only
+        if plot:
+            plt.close("Cluster Comparison") #1+len(cluster_sizes)
+            fig, axs = plt.subplots(1+len(cluster_sizes), 1, figsize=(15,6*(+len(cluster_sizes))), num="Cluster Comparison")
+            plt.title("Cluster Comparison")
 
-        # if plot:
-        plt.close("Cluster Comparison") #1+len(cluster_sizes)
-        fig, axs = plt.subplots(1+len(cluster_sizes), 1, figsize=(15,6*(+len(cluster_sizes))), num="Cluster Comparison")
-        plt.title("Cluster Comparison")
-
-        axs[0].scatter(*data.T, s=50, linewidth=0, c=labels, alpha=0.5, cmap="Set1")
-        axs[0].set_title("Original Distribution")
+            axs[0].scatter(*data.T, s=50, linewidth=0, c=labels, alpha=0.5, cmap="Set1")
+            axs[0].set_title("Original Distribution")
 
         _metrics = []
 
@@ -467,7 +478,7 @@ class ClusterPipeline:
                                     zip(cluster_colors, clusterer.probabilities_)]
 
             # print(cluster_labels)
-            noise, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind, sil_score = [np.NaN]*5
+            noise, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind, sil_score = [ii32.max]*5
 
             noise = list(cluster_labels).count(-1)/len(cluster_labels)
             
@@ -485,18 +496,18 @@ class ClusterPipeline:
             
             _metrics.append([num_clusters,noise,sil_score, halkidi_s_Dbw, halkidi_ignore_noise, halkidi_bind])
 
-            # if plot:
-            axs[i+1].scatter(*data.T, s=50, linewidth=0, c=cluster_member_colors, alpha=0.6)
-            axs[i+1].set_title("Minimum Cluster Size: {}".format(size))
-            axs[i+1].text(0.95,0.95,"Clusters Found: {}".format(num_clusters),
+            if plot:
+                axs[i+1].scatter(*data.T, s=50, linewidth=0, c=cluster_member_colors, alpha=0.6)
+                axs[i+1].set_title("Minimum Cluster Size: {}".format(size))
+                axs[i+1].text(0.95,0.95,"Clusters Found: {}".format(num_clusters),
                         horizontalalignment='right', verticalalignment='top',
                         fontsize=14, transform=axs[i+1].transAxes)
 
-        plt.tight_layout()
-        if plot: plt.show()
-
-        plt.savefig(self.FIGUREDIR+"cluster_perf_comp.png")
-        plt.close("Cluster Comparison")
+        if plot:
+            plt.tight_layout()
+            plt.show()
+            plt.savefig(self.FIGUREDIR+"cluster_perf_comp.png")
+            plt.close("Cluster Comparison")
         
         scores = pd.DataFrame(_metrics, columns=["Clusters", "Noise", "Silhouette","Halkidi", "Halkidi-Filtered Noise", "Halkidi-Bounded Noise"], index=cluster_sizes)
         
