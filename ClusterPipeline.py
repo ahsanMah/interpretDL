@@ -87,6 +87,7 @@ class ClusterPipeline:
         self.history = None
         self.zscalers = {}
 
+        self.predictions = []
         self.testing_idxs = []
         self.correct_preds_bool_arr = []
         self.lrp_results = []
@@ -130,8 +131,10 @@ class ClusterPipeline:
 
         # Getting all the samples that can be correctly predicted
         # Note: Samples have already been scaled
-        all_samples, _labels, correct_pred_idxs, final_acc = self.getCorrectPredictions(model=self.model,
+        all_samples, predictions, correct_pred_idxs, final_acc = self.getCorrectPredictions(model=self.model,
                                                              samples=X_test, labels=y_test, ZScaler=ZScaler)
+        
+        correct_samples = all_samples[correct_pred_idxs]
 
         # Stripping the softmax activation from the model
         model_w_softmax = self.model
@@ -143,10 +146,10 @@ class ClusterPipeline:
         lrp_E = innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
                 model=model_softmax_stripped, epsilon=1e-3)
 
-        lrp_results = lrp_E.analyze(all_samples)
+        lrp_results = lrp_E.analyze(correct_samples)
         
         print("Finished training Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldnum, *final_acc))
-        return (final_acc, lrp_results, correct_pred_idxs)
+        return (predictions, lrp_results, correct_pred_idxs)
 
     
     def runFoldWorker(self, foldnum, train_index, test_index, batch_size, epochs):
@@ -155,10 +158,10 @@ class ClusterPipeline:
         y_train = self.train_set.labels.iloc[train_index]
         X_test  = self.train_set.features.iloc[test_index]
         y_test = self.train_set.labels.iloc[test_index]
-        final_acc, lrp_results, correct_pred_idxs = self.runDNNAnalysis(X_train, y_train, X_test=X_test, y_test=y_test,
+        predictions, lrp_results, correct_pred_idxs = self.runDNNAnalysis(X_train, y_train, X_test=X_test, y_test=y_test,
                                                     epochs=epochs, batch_size=batch_size, foldnum=foldnum)
 
-        return (lrp_results, correct_pred_idxs, test_index)
+        return (predictions, lrp_results, correct_pred_idxs, test_index)
 
     def cross_validation(self, batch_size, epochs, num_folds = 10, parallel=True):
         """
@@ -185,7 +188,8 @@ class ClusterPipeline:
 
         print("Runtime: {:.3f}s".format(time()-start_time))
 
-        for lrp_results, correct_idxs, test_idxs in results:
+        for predictions, lrp_results, correct_idxs, test_idxs in results:
+            self.predictions.extend(predictions)
             self.lrp_results.extend(lrp_results)
             self.correct_preds_bool_arr.extend(correct_idxs)
             self.testing_idxs.extend(test_idxs)
@@ -430,7 +434,7 @@ class ClusterPipeline:
         
         print("Fold Correct:", correct_idxs.sum())
 
-        return samples[correct_idxs], labels[correct_idxs], correct_idxs, loss_and_metrics
+        return samples, preds, correct_idxs, loss_and_metrics
 
 
 ######## HELPER FUNCTIONS ############
