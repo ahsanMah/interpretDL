@@ -125,12 +125,14 @@ class ClusterPipeline:
 
         return history, ZScaler
 
-    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, X_test=[], y_test=[], foldnum=0):
+    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, X_test=[], y_test=[], foldnum=0, verbose=0):
         # import keras
         import innvestigate
         import innvestigate.utils as iutils
 
-        history, ZScaler = self.train(X_train, y_train, epochs=epochs, batch_size=batch_size, foldnum=foldnum)
+        history, ZScaler = self.train(X_train, y_train, epochs=epochs, batch_size=batch_size, foldnum=foldnum, verbose=verbose)
+        train_acc = [history.history["loss"][-1] , history.history["acc"][-1]]
+        print("Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldnum, *train_acc))
 
         # Getting all the samples that can be correctly predicted
         # Note: Samples have already been scaled
@@ -151,7 +153,6 @@ class ClusterPipeline:
 
         lrp_results = lrp_E.analyze(correct_samples)
         
-        print("Finished training Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldnum, *final_acc))
         return (predictions, lrp_results, correct_pred_idxs)
 
     
@@ -202,22 +203,25 @@ class ClusterPipeline:
 
         return (self.lrp_results, self.correct_preds_bool_arr)
 
-    def train_model(self, batch_size=20, epochs=200, cross_validation=False, parallel=True):
+    def train_model(self, batch_size=20, epochs=200, verbose=0, cross_validation=False, parallel=True):
 
         if cross_validation:
             self.cross_validation(batch_size,epochs, parallel=parallel)
         else:
             X_train, y_train = self.train_set.features, self.train_set.labels
-            final_acc, lrp_results, correct_preds = self.runDNNAnalysis(X_train, y_train, epochs=epochs, batch_size=batch_size)
+            final_acc, lrp_results, correct_preds = self.runDNNAnalysis(X_train, y_train, 
+                                                    epochs=epochs, batch_size=batch_size, verbose=verbose)
             #Plot LRP
         return
 
 
-    def train_clusterer(self, class_label, min_cluster_sizes=[5,10,15], plot=False):
+    def train_clusterer(self, class_label=None, min_cluster_sizes=[5,10,15], plot=False):
         '''
         Expects a class label to cluster
         This should be the class that the user expects to have subclusters
         '''
+
+        if not class_label: class_label = self.target_class
 
         correct_pred_labels = self.train_set.labels.iloc[self.testing_idxs][self.correct_preds_bool_arr]
         split_class = correct_pred_labels == class_label
@@ -228,15 +232,15 @@ class ClusterPipeline:
         labels = correct_pred_labels[split_class]
         
         self.reducer = self.reducer.fit(sdata)
-        embeddings = self.reducer.transform(sdata)
+        # embeddings = self.reducer.transform(sdata)
 
-        scores = self.clusterPerf(embeddings, labels, min_cluster_sizes, plot)
+        scores = self.clusterPerf(sdata, labels, min_cluster_sizes, plot)
         print("Minimum Size:")
         print(scores.idxmin())
         
         minsize = int(scores["Halkidi-Filtered Noise"].idxmin())
         self.clusterer = hdbscan.HDBSCAN(min_cluster_size=minsize, prediction_data=True)
-        self.clusterer.fit(embeddings)
+        self.clusterer.fit(sdata)
 
         return scores
         
@@ -244,9 +248,9 @@ class ClusterPipeline:
     def predict_cluster(self, lrp_data, plot=False):
         data  = np.clip(lrp_data,0,None)
         sdata = MinMaxScaler().fit_transform(data)
-        embeddings=self.reducer.transform(sdata)
+        # embeddings=self.reducer.transform(sdata)
 
-        cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, embeddings)
+        cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, sdata)
 
         if plot:
             plt.close("Validation Relevance")
