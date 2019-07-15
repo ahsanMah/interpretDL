@@ -135,7 +135,7 @@ class ClusterPipeline:
             dill.dump(ZScaler, pklfile)
 
         with open(self.TRAINFILE.format(id=foldnum), "wb") as pklfile:
-            dill.dump(X, pklfile)
+            dill.dump(X_train, pklfile)
 
         return history, ZScaler
 
@@ -160,7 +160,7 @@ class ClusterPipeline:
         
         return (predictions, relevance_results, correct_pred_idxs)
 
-    def get_analyzer(self, model, X_train, foldnum=0):
+    def get_analyzer(self, model, X_train):
         import innvestigate
         import innvestigate.utils as iutils
 
@@ -358,14 +358,12 @@ class ClusterPipeline:
 
         self.dnn_analyzers = []
 
-        # for dnn_idx in range(self.n_splits):
-        #     # analyzer = get_analyzer(self.foldmodel(dnn_idx))
-        #     model_wo_softmax = iutils.keras.graph.model_wo_softmax(model_w_softmax)
-        #     # Creating an analyzer
-        #     self.dnn_analyzers.append(
-        #         innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
-        #         model=model_wo_softmax, epsilon=1e-3))
-
+        for dnn_idx in range(self.n_splits):
+            with open(self.TRAINFILE.format(id=dnn_idx), "rb") as pklfile:
+                _x_train = dill.load(pklfile)
+                # Creating an analyzer
+                analyzer = self.get_analyzer(self.foldmodel(dnn_idx), _x_train.values)
+                self.dnn_analyzers.append(analyzer)
         print("Done!")
         return 
 
@@ -389,7 +387,7 @@ class ClusterPipeline:
     
     def get_validation_clusters(self, plot=False):
 
-        if not self.val_set_lrp: self.get_validation_lrp()
+        if len(self.val_set_lrp) == 0: self.get_validation_lrp()
         
         cluster_labels, strengths = self.predict_cluster(self.val_set_lrp)
 
