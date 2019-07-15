@@ -66,11 +66,13 @@ class ClusterPipeline:
     # Filenames for storing / caching model params
     MODELFILE  = BASENAME + "_{id}.h5"
     SCALERFILE = BASENAME + "_{id}_zscaler.pickle"
+    ANALYZERFILE = BASENAME + "_{id}_analyzer.pickle"
+    TRAINFILE = BASENAME + "_{id}_train.pickle"
 
     def __init__(self, model, train_set, val_set,
                 target_class=0,
                 reducer=umap.UMAP(random_state=42),
-                analyzer="lrp",
+                analyzer_type="lrp.epsilon",
                 cluster_algo = "HDBSCAN",
                 linearClassifier="SVM"):
         """
@@ -80,6 +82,8 @@ class ClusterPipeline:
         """
         self.model = model
         self.clusterer = None
+        self.analyzer_type = analyzer_type
+
         self.model.save_weights(self.INITFILE)
         self.reducer_pipeline = Pipeline([
             ("umap", reducer),
@@ -99,6 +103,7 @@ class ClusterPipeline:
         self.testing_idxs = []
         self.correct_preds_bool_arr = []
         self.lrp_results = []
+        self.training_lrp = []
         
         #  Mask for retreiving validation samples that were predicted correctly
         self.val_pred_mask = []
@@ -123,17 +128,20 @@ class ClusterPipeline:
         history = self.model.fit(X_train, y_train,
                         epochs=epochs, batch_size = batch_size, verbose=verbose)
         
+        # Save states of training run
         self.model.save_weights(self.MODELFILE.format(id=foldnum))
 
         with open(self.SCALERFILE.format(id=foldnum), "wb") as pklfile:
             dill.dump(ZScaler, pklfile)
 
+        with open(self.TRAINFILE.format(id=foldnum), "wb") as pklfile:
+            dill.dump(X, pklfile)
+
         return history, ZScaler
 
     def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, X_test=[], y_test=[], foldnum=0, verbose=0):
         # import keras
-        import innvestigate
-        import innvestigate.utils as iutils
+       
 
         history, ZScaler = self.train(X_train, y_train, epochs=epochs, batch_size=batch_size, foldnum=foldnum, verbose=verbose)
         train_acc = [history.history["loss"][-1] , history.history["acc"][-1]]
@@ -146,20 +154,30 @@ class ClusterPipeline:
         
         correct_samples = all_samples[correct_pred_idxs]
 
-        # Stripping the softmax activation from the model
-        model_w_softmax = self.model
-        # print("Model in child:")
-        # print(self.model.summary())
-        model_softmax_stripped = iutils.keras.graph.model_wo_softmax(model_w_softmax)
-
         # Creating an analyzer
-        lrp_E = innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
-                model=model_softmax_stripped, epsilon=1e-3)
-
-        lrp_results = lrp_E.analyze(correct_samples)
+        analyzer = self.get_analyzer(self.model, ZScaler.transform(X_train.values), foldnum)
+        relevance_results = analyzer.analyze(correct_samples)
         
-        return (predictions, lrp_results, correct_pred_idxs)
+        return (predictions, relevance_results, correct_pred_idxs)
 
+    def get_analyzer(self, model, X_train, foldnum=0):
+        import innvestigate
+        import innvestigate.utils as iutils
+
+        analyzer_kwargs = {
+            "pattern.attribution":
+                {"pattern_type":"relu"},
+            "lrp.epsilon":
+                {"epsilon":1e-3}
+         }
+
+        model_wo_softmax = iutils.keras.graph.model_wo_softmax(model)
+
+        analyzer = innvestigate.create_analyzer(self.analyzer_type, model_wo_softmax,
+                                                **analyzer_kwargs[self.analyzer_type])
+        analyzer.fit(X_train, batch_size=20, verbose=1, disable_no_training_warning=True)
+        
+        return analyzer
     
     def runFoldWorker(self, foldnum, train_index, test_index, batch_size, epochs):
         print("Running worker:",foldnum)
@@ -223,7 +241,7 @@ class ClusterPipeline:
         return
 
 
-    def train_clusterer(self, class_label=None, min_cluster_sizes=[5,10,15], plot=False):
+    def train_clusterer(self, class_label=None, min_cluster_sizes=[], plot=False):
         '''
         Expects a class label to cluster
         This should be the class that the user expects to have subclusters
@@ -235,12 +253,15 @@ class ClusterPipeline:
         split_class = correct_pred_labels == class_label
         split_class_lrp = np.array(self.lrp_results)[split_class]
 
-        lrp_data = np.clip(split_class_lrp, 0,None)
-        # sdata = MinMaxScaler().fit_transform(data)
+        self.training_lrp = np.clip(split_class_lrp, 0,None)
         labels = correct_pred_labels[split_class]
         
-        self.reducer_pipeline = self.reducer_pipeline.fit(lrp_data)
-        embeddings = self.reducer_pipeline.transform(lrp_data)
+        self.reducer_pipeline = self.reducer_pipeline.fit(self.training_lrp)
+        embeddings = self.reducer_pipeline.transform(self.training_lrp)
+
+        if not min_cluster_sizes:
+            n_neighbours = self.reducer_pipeline["umap"].n_neighbors
+            min_cluster_sizes = range(n_neighbours-3, n_neighbours+3)
 
         scores = self.clusterPerf(embeddings, labels, min_cluster_sizes, plot)
         print("Minimum Size:")
@@ -254,8 +275,7 @@ class ClusterPipeline:
         
 
     def predict_cluster(self, lrp_data, plot=False):
-        data  = np.clip(lrp_data,0,None)
-        embeddings=self.reducer_pipeline.transform(data)
+        embeddings=self.reducer_pipeline.transform(lrp_data)
 
         cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, embeddings)
 
@@ -338,13 +358,13 @@ class ClusterPipeline:
 
         self.dnn_analyzers = []
 
-        for dnn_idx in range(self.n_splits):
-            model_w_softmax = self.foldmodel(dnn_idx)
-            model_wo_softmax = iutils.keras.graph.model_wo_softmax(model_w_softmax)
-            # Creating an analyzer
-            self.dnn_analyzers.append(
-                innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
-                model=model_wo_softmax, epsilon=1e-3))
+        # for dnn_idx in range(self.n_splits):
+        #     # analyzer = get_analyzer(self.foldmodel(dnn_idx))
+        #     model_wo_softmax = iutils.keras.graph.model_wo_softmax(model_w_softmax)
+        #     # Creating an analyzer
+        #     self.dnn_analyzers.append(
+        #         innvestigate.analyzer.relevance_based.relevance_analyzer.LRPEpsilon(
+        #         model=model_wo_softmax, epsilon=1e-3))
 
         print("Done!")
         return 
@@ -364,10 +384,9 @@ class ClusterPipeline:
         for dnn_idx, sample in zip(class_DNN, class_samples):
             self.val_set_lrp.extend(analyze(dnn_idx,sample))
 
+        self.val_set_lrp = np.clip(self.val_set_lrp, 0, None)
         return self.val_set_lrp
     
-    # def plot_clusters()
-
     def get_validation_clusters(self, plot=False):
 
         if not self.val_set_lrp: self.get_validation_lrp()
@@ -459,7 +478,7 @@ class ClusterPipeline:
 
 ######## HELPER FUNCTIONS ############
 
-    def clusterPerf(self, data, labels, cluster_sizes=[], plot=False):
+    def clusterPerf(self, data, labels, cluster_sizes, plot=False):
         ii32 = np.iinfo(np.int32)
         
         # FIXME: Assumes 2D data only
@@ -473,10 +492,6 @@ class ClusterPipeline:
 
         _metrics = []
 
-        if not cluster_sizes:
-            n_neighbours = reducer_pipeline["umap"].n_neighbors
-            cluster_sizes = range(n_neighbours-3, n_neighbours+3)
-        
         min_samp_start = cluster_sizes[0]
 
         for i,size in enumerate(cluster_sizes):
@@ -528,6 +543,7 @@ class ClusterPipeline:
         scores = pd.DataFrame(_metrics, columns=["Clusters", "Noise","Halkidi", "Halkidi-Filtered Noise"], index=index)
         
         return scores
+
 
 def calculateEntropy(data, plot=False):
     '''
