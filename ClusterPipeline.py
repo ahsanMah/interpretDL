@@ -13,6 +13,7 @@ import pandas as pd
 
 from sklearn import metrics
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from s_dbw import S_Dbw
@@ -75,11 +76,15 @@ class ClusterPipeline:
         """
         model: keras object
         data: [training_data, validation_data]
+        reducer: UMAP object with parameters appropriate for the data
         """
         self.model = model
         self.clusterer = None
         self.model.save_weights(self.INITFILE)
-        self.reducer = reducer
+        self.reducer_pipeline = Pipeline([
+            ("umap", reducer),
+            ("scaler",  MinMaxScaler())
+        ])
 
         self.train_set = self.Dataset(*train_set)
         self.val_set = self.Dataset(*val_set)
@@ -174,8 +179,6 @@ class ClusterPipeline:
 
         start_time = time()
         
-        self.lrp_results = []
-        self.correct_preds_bool_arr = []
         results = []
         pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) 
                       for fnum, (tr_idx, tst_idx) in enumerate(self.getKFold(n_splits=num_folds))]
@@ -204,6 +207,11 @@ class ClusterPipeline:
         return (self.lrp_results, self.correct_preds_bool_arr)
 
     def train_model(self, batch_size=20, epochs=200, verbose=0, cross_validation=False, parallel=True):
+        
+        self.lrp_results = []
+        self.correct_preds_bool_arr = []
+        self.predictions = []
+        self.testing_idxs = []
 
         if cross_validation:
             self.cross_validation(batch_size,epochs, parallel=parallel)
@@ -227,30 +235,29 @@ class ClusterPipeline:
         split_class = correct_pred_labels == class_label
         split_class_lrp = np.array(self.lrp_results)[split_class]
 
-        data = np.clip(split_class_lrp, 0,None)
-        sdata = MinMaxScaler().fit_transform(data)
+        lrp_data = np.clip(split_class_lrp, 0,None)
+        # sdata = MinMaxScaler().fit_transform(data)
         labels = correct_pred_labels[split_class]
         
-        self.reducer = self.reducer.fit(sdata)
-        # embeddings = self.reducer.transform(sdata)
+        self.reducer_pipeline = self.reducer_pipeline.fit(lrp_data)
+        embeddings = self.reducer_pipeline.transform(lrp_data)
 
-        scores = self.clusterPerf(sdata, labels, min_cluster_sizes, plot)
+        scores = self.clusterPerf(embeddings, labels, min_cluster_sizes, plot)
         print("Minimum Size:")
         print(scores.idxmin())
         
         minsize = int(scores["Halkidi-Filtered Noise"].idxmin())
         self.clusterer = hdbscan.HDBSCAN(min_cluster_size=minsize, prediction_data=True)
-        self.clusterer.fit(sdata)
+        self.clusterer.fit(embeddings)
 
         return scores
         
 
     def predict_cluster(self, lrp_data, plot=False):
         data  = np.clip(lrp_data,0,None)
-        sdata = MinMaxScaler().fit_transform(data)
-        # embeddings=self.reducer.transform(sdata)
+        embeddings=self.reducer_pipeline.transform(data)
 
-        cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, sdata)
+        cluster_labels, strengths = hdbscan.approximate_predict(self.clusterer, embeddings)
 
         if plot:
             plt.close("Validation Relevance")
