@@ -155,7 +155,7 @@ class ClusterPipeline:
         correct_samples = all_samples[correct_pred_idxs]
 
         # Creating an analyzer
-        analyzer = self.get_analyzer(self.model, ZScaler.transform(X_train.values), foldnum)
+        analyzer = self.get_analyzer(self.model, ZScaler.transform(X_train.values))
         relevance_results = analyzer.analyze(correct_samples)
         
         return (predictions, relevance_results, correct_pred_idxs)
@@ -247,7 +247,7 @@ class ClusterPipeline:
         This should be the class that the user expects to have subclusters
         '''
 
-        if not class_label: class_label = self.target_class
+        if None == class_label: class_label = self.target_class
 
         correct_pred_labels = self.train_set.labels.iloc[self.testing_idxs][self.correct_preds_bool_arr]
         split_class = correct_pred_labels == class_label
@@ -362,7 +362,7 @@ class ClusterPipeline:
             with open(self.TRAINFILE.format(id=dnn_idx), "rb") as pklfile:
                 _x_train = dill.load(pklfile)
                 # Creating an analyzer
-                analyzer = self.get_analyzer(self.foldmodel(dnn_idx), _x_train.values)
+                analyzer = self.get_analyzer(self.foldmodel(dnn_idx), _x_train)
                 self.dnn_analyzers.append(analyzer)
         print("Done!")
         return 
@@ -419,6 +419,63 @@ class ClusterPipeline:
 
         return class_samples, cluster_labels
     
+
+    def getSubclusters(self):
+        """
+        Returns dictionary of training,label pairs for every subcluster
+        """
+
+        subcluster_labels = range(0,max(self.clusterer.labels_)+1)
+
+        # Get testing samples from cross validation
+        reindexer = self.testing_idxs
+
+        # That were correctly predicted
+        correct_preds = self.correct_preds_bool_arr
+
+        # Separating Control from Target
+        target_samples  = self.train_set.labels.iloc[reindexer][correct_preds] == self.target_class
+        control_samples = ~target_samples
+
+        target_class_features = self.train_set.features.iloc[reindexer][correct_preds][target_samples]
+        target_class_labels   = self.train_set.labels.iloc[reindexer][correct_preds][target_samples]
+        # target_class_features.head()
+
+        cluster_train = {}
+
+        for cluster_label in subcluster_labels:
+            
+            tsamples = target_class_features[(self.clusterer.labels_ == cluster_label)]
+            tlabels  = target_class_labels[(self.clusterer.labels_ == cluster_label)]
+
+
+        #     csamples = self.train_set.features.iloc[reindexer][correct_preds][control_samples]
+            csamples = self.train_set.features[self.train_set.labels != self.target_class]
+            csamples = csamples[:len(tsamples)]
+
+            clabels = self.train_set.labels.iloc[reindexer][correct_preds][control_samples]
+            clabels = clabels[:len(tsamples)]
+        
+            _clustered = pd.DataFrame(self.training_lrp[(self.clusterer.labels_ == cluster_label)],
+                                    columns = self.train_set.features.columns)
+            
+        #     thresh = min(val_clustered.describe().loc["75%"])
+            thresh = _clustered.max().min()
+            print(thresh)
+            reduced_cols = self.get_relevant_cols(_clustered, thresh=thresh).columns
+            print(reduced_cols)
+            
+            tsamples = tsamples[reduced_cols]
+            csamples  = csamples[reduced_cols]
+            
+            # Now stack it with control values of same size...
+            X_train_sc = pd.concat([csamples, tsamples], axis="index")
+            y_train_sc = pd.concat([clabels, tlabels], axis="index")
+            
+            cluster_train[cluster_label] = (X_train_sc, y_train_sc)
+
+        return cluster_train
+
     ### Helpers
     def getKFold(self, train_data=None, n_splits=10):
         from sklearn.model_selection import StratifiedKFold as KFold
@@ -473,6 +530,19 @@ class ClusterPipeline:
 
         return samples, preds, correct_idxs, loss_and_metrics
 
+    def get_relevant_cols(self, df, thresh = 1e-2):
+
+        all_above_thresh = (df < thresh).all(0) #Check if all values in columns satisfy the criteria
+        max_above_thresh = (df.max() < thresh)
+        quantile_above_thresh = (df.quantile(0.8) <= thresh)
+
+        criteria = quantile_above_thresh
+        irrelevant_cols = df.columns[criteria] 
+        irrelevant_cols
+        
+        relevant_features_only = df.drop(columns = irrelevant_cols)
+        
+        return relevant_features_only
 
 ######## HELPER FUNCTIONS ############
 
