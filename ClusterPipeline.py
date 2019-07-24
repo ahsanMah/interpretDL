@@ -142,7 +142,6 @@ class ClusterPipeline:
     def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, X_test=[], y_test=[], foldnum=0, verbose=0):
         # import keras
        
-
         history, ZScaler = self.train(X_train, y_train, epochs=epochs, batch_size=batch_size, foldnum=foldnum, verbose=verbose)
         train_acc = [history.history["loss"][-1] , history.history["acc"][-1]]
         print("Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldnum, *train_acc))
@@ -212,7 +211,11 @@ class ClusterPipeline:
                 results.append(self.runFoldWorker(*_args))
 
         print("Runtime: {:.3f}s".format(time()-start_time))
+        
+        return self.extractResults(results)
 
+    def extractResults(self, results):
+        # print(results)
         for predictions, lrp_results, correct_idxs, test_idxs in results:
             self.predictions.extend(predictions)
             self.lrp_results.extend(lrp_results)
@@ -221,8 +224,7 @@ class ClusterPipeline:
 
         print("Correct:", self.correct_preds_bool_arr.count(True))
         print("Test Size:", len(self.testing_idxs))
-
-        return (self.lrp_results, self.correct_preds_bool_arr)
+        return
 
     def train_model(self, batch_size=20, epochs=200, verbose=0, cross_validation=False, parallel=True):
         
@@ -235,9 +237,13 @@ class ClusterPipeline:
             self.cross_validation(batch_size,epochs, parallel=parallel)
         else:
             X_train, y_train = self.train_set.features, self.train_set.labels
-            final_acc, lrp_results, correct_preds = self.runDNNAnalysis(X_train, y_train, 
-                                                    epochs=epochs, batch_size=batch_size, verbose=verbose)
-            #Plot LRP
+            pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) 
+                        for fnum, (tr_idx, tst_idx) in enumerate(
+                                self.get_split_index(features=X_train, labels=y_train)
+                        )]
+
+            results = [self.runFoldWorker(*pool_args[0])]
+            self.extractResults(results)
         return
 
 
@@ -338,7 +344,7 @@ class ClusterPipeline:
         self.val_pred_mask =  (predictions[:,:,0] > -1).any(axis=1)
         predictions = predictions[self.val_pred_mask]
 
-        # print("Predictions:", predictions)
+        print("Prediction Accuracy: {:.4f}".format(predictions.shape[0]/self.val_set.labels.shape[0]))
 
         # The DNN number with the highest confidence
         # One for each sample
@@ -420,7 +426,7 @@ class ClusterPipeline:
         return class_samples, cluster_labels
     
 
-    def getSubclusters(self):
+    def getSubclusters(self, reduce=True):
         """
         Returns dictionary of training,label pairs for every subcluster
         """
@@ -455,19 +461,20 @@ class ClusterPipeline:
 
             clabels = self.train_set.labels.iloc[reindexer][correct_preds][control_samples]
             clabels = clabels[:len(tsamples)]
-        
-            _clustered = pd.DataFrame(self.training_lrp[(self.clusterer.labels_ == cluster_label)],
-                                    columns = self.train_set.features.columns)
-            
-        #     thresh = min(val_clustered.describe().loc["75%"])
-            thresh = _clustered.max().min()
-            print(thresh)
-            reduced_cols = self.get_relevant_cols(_clustered, thresh=thresh).columns
-            print(reduced_cols)
-            
-            tsamples = tsamples[reduced_cols]
-            csamples  = csamples[reduced_cols]
-            
+
+            if reduce:
+                _clustered = pd.DataFrame(self.training_lrp[(self.clusterer.labels_ == cluster_label)],
+                                        columns = self.train_set.features.columns)
+                
+            #     thresh = min(val_clustered.describe().loc["75%"])
+                thresh = _clustered.max().min()
+                # print(thresh)
+                reduced_cols = self.get_relevant_cols(_clustered, thresh=thresh).columns
+                # print(reduced_cols)
+                
+                tsamples = tsamples[reduced_cols]
+                csamples  = csamples[reduced_cols]
+                
             # Now stack it with control values of same size...
             X_train_sc = pd.concat([csamples, tsamples], axis="index")
             y_train_sc = pd.concat([clabels, tlabels], axis="index")
@@ -477,6 +484,25 @@ class ClusterPipeline:
         return cluster_train
 
     ### Helpers
+    def get_split_index(self, features, labels, test_size=0.3):
+        import numpy as np
+        from sklearn.model_selection import StratifiedShuffleSplit
+        
+        features = np.array(features)
+        # The train set will have equal amounts of each target class
+        # Performing single split
+        split = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=42)
+        return [[train_index, test_index] for train_index,test_index in split.split(features, labels)]
+
+    # def split_valid(self, features, training_labels, valid_size=0.5):
+    #     train_index, validation_index = get_split_index(features, training_labels, test_size=valid_size)[0]
+        
+    #     X_valid, y_valid = features.iloc[validation_index], training_labels.iloc[validation_index]
+    #     X_train, y_train = features.iloc[train_index], training_labels.iloc[train_index]
+        
+    #     return X_train, y_train, X_valid, y_valid
+    
+
     def getKFold(self, train_data=None, n_splits=10):
         from sklearn.model_selection import StratifiedKFold as KFold
         
