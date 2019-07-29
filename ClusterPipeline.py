@@ -15,6 +15,7 @@ from sklearn import metrics
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from s_dbw import S_Dbw
 from multiprocess import Pool
@@ -29,6 +30,8 @@ class ClusterPipeline:
         data: Original dataset which will be used for training and validation
     """
 
+
+    ###### Defining useful custom classes and transformers ######
     class Dataset:
         '''
         Helper class to couple features with their labels easily
@@ -57,7 +60,21 @@ class ClusterPipeline:
         
         def transform(self, labels):
             return self.enc.transform(np.array(labels).reshape(-1,1))
-    
+
+    class DataFrameScaler(BaseEstimator, TransformerMixin):
+        """
+        Returns a numpy matrix of ZScaled columns identified by attribute_names 
+        """
+        def __init__(self, attribute_names):
+            self.attribute_names = attribute_names
+        def fit(self, X, y=None):
+            self.scaler = StandardScaler().fit(X[self.attribute_names])
+            return self
+        def transform(self, X):
+            cat_cols = X.drop(columns=self.attribute_names).values
+            scaled_cols = self.scaler.transform(X[self.attribute_names])
+            return np.concatenate((scaled_cols, cat_cols), axis=1)
+
     MODELDIR = "models/"
     FIGUREDIR = "pipeline_figs/"
     INITFILE = MODELDIR+"init.h5"
@@ -73,6 +90,7 @@ class ClusterPipeline:
                 target_class=0,
                 reducer=umap.UMAP(random_state=42),
                 analyzer_type="lrp.epsilon",
+                numerical_cols = None,
                 cluster_algo = "HDBSCAN",
                 linearClassifier="SVM"):
         """
@@ -93,6 +111,8 @@ class ClusterPipeline:
         self.train_set = self.Dataset(*train_set)
         self.val_set = self.Dataset(*val_set)
         self.target_class = target_class
+        self.numerical_cols = numerical_cols if numerical_cols else self.train_set.features.columns
+
 
         self.hot_encoder = self.dfHotEncoder()
         self.hot_encoder.fit(self.train_set.labels)
@@ -116,11 +136,11 @@ class ClusterPipeline:
         """
         Trains a model using keras API, after scaling the data
         """
-        from sklearn.preprocessing import StandardScaler
+        # from sklearn.preprocessing import StandardScaler
         from imblearn.over_sampling import SMOTE
         self.model.load_weights(self.INITFILE)
 
-        ZScaler = StandardScaler().fit(X)
+        ZScaler = self.DataFrameScaler(self.numerical_cols).fit(X)
         X_train = ZScaler.transform(X)
         X_train,y_train = SMOTE(random_state=RANDOM_STATE).fit_resample(X_train,np.ravel(y)) # Both are np arrays now
         y_train = self.hot_encoder.transform(y_train)
