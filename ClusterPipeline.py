@@ -67,6 +67,7 @@ class ClusterPipeline:
         """
         def __init__(self, attribute_names):
             self.attribute_names = attribute_names
+            self.scaler = None
         def fit(self, X, y=None):
             self.scaler = StandardScaler().fit(X[self.attribute_names])
             return self
@@ -152,7 +153,7 @@ class ClusterPipeline:
         self.model.save_weights(self.MODELFILE.format(id=foldnum))
 
         with open(self.SCALERFILE.format(id=foldnum), "wb") as pklfile:
-            dill.dump(ZScaler, pklfile)
+            dill.dump(ZScaler.scaler, pklfile)
 
         with open(self.TRAINFILE.format(id=foldnum), "wb") as pklfile:
             dill.dump(X_train, pklfile)
@@ -174,7 +175,7 @@ class ClusterPipeline:
         correct_samples = all_samples[correct_pred_idxs]
 
         # Creating an analyzer
-        analyzer = self.get_analyzer(self.model, ZScaler.transform(X_train.values))
+        analyzer = self.get_analyzer(self.model, ZScaler.transform(X_train))
         relevance_results = analyzer.analyze(correct_samples)
         
         return (predictions, relevance_results, correct_pred_idxs)
@@ -349,8 +350,11 @@ class ClusterPipeline:
         if not self.zscalers: self.load_scalers()
         
         predictions = []
-        for i,zscaler in enumerate(self.zscalers):
-            _samples = zscaler.transform(self.val_set.features)
+        DFScaler = self.DataFrameScaler(self.numerical_cols)
+
+        for i,zscaler in enumerate(self.zscalers):  
+            DFScaler.scaler = zscaler
+            _samples = DFScaler.transform(self.val_set.features)
             model_preds = np.array([(np.argmax(x), np.max(x)) for x in self.foldmodel(i).predict(_samples)])
             incorrect = model_preds[:,0] != self.val_set.labels
             model_preds[incorrect] = -1
