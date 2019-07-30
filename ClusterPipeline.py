@@ -21,6 +21,7 @@ from s_dbw import S_Dbw
 from multiprocess import Pool
 from multiprocess import get_context
 from time import time
+from datetime import datetime
 
 RANDOM_STATE = 42
 
@@ -76,16 +77,16 @@ class ClusterPipeline:
             scaled_cols = self.scaler.transform(X[self.attribute_names])
             return np.concatenate((scaled_cols, cat_cols), axis=1)
 
-    MODELDIR = "models/"
-    FIGUREDIR = "pipeline_figs/"
-    INITFILE = MODELDIR+"init.h5"
-    BASENAME = MODELDIR+"dnn"
+    # MODELDIR = "models/"
+    # FIGUREDIR = "pipeline_figs/"
+    # INITFILE = MODELDIR+"init.h5"
+    # BASENAME = MODELDIR+"dnn"
 
-    # Filenames for storing / caching model params
-    MODELFILE  = BASENAME + "_{id}.h5"
-    SCALERFILE = BASENAME + "_{id}_zscaler.pickle"
-    ANALYZERFILE = BASENAME + "_{id}_analyzer.pickle"
-    TRAINFILE = BASENAME + "_{id}_train.pickle"
+    # # Filenames for storing / caching model params
+    # MODELFILE  = BASENAME + "_{id}.h5"
+    # SCALERFILE = BASENAME + "_{id}_zscaler.pickle"
+    # ANALYZERFILE = BASENAME + "_{id}_analyzer.pickle"
+    # TRAINFILE = BASENAME + "_{id}_train.pickle"
 
     def __init__(self, model, train_set, val_set,
                 target_class=0,
@@ -99,6 +100,8 @@ class ClusterPipeline:
         data: [training_data, validation_data]
         reducer: UMAP object with parameters appropriate for the data
         """
+        self.setupDirPaths()
+
         self.model = model
         self.clusterer = None
         self.analyzer_type = analyzer_type
@@ -132,6 +135,23 @@ class ClusterPipeline:
 
         self.dnn_analyzers = []
         self.val_set_lrp = []
+
+    def setupDirPaths(self):
+        ### Directory names for various files being stored ###
+        now = datetime.utcnow().strftime("%Y%m%d%H%M%S") 
+        self.MODELDIR = "models/"+now+"/"
+        os.mkdir(self.MODELDIR)
+        
+        self.FIGUREDIR = self.MODELDIR+"pipeline_figs/"
+        self.INITFILE = self.MODELDIR+"init.h5"
+        self.BASENAME = self.MODELDIR+"dnn"
+
+        # Filenames for storing / caching model params
+        self.MODELFILE  = self.BASENAME + "_{id}.h5"
+        self.SCALERFILE = self.BASENAME + "_{id}_zscaler.pickle"
+        self.ANALYZERFILE = self.BASENAME + "_{id}_analyzer.pickle"
+        self.TRAINFILE = self.BASENAME + "_{id}_train.pickle"
+
 
     def train(self, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=0, foldnum=0):
         """
@@ -265,6 +285,9 @@ class ClusterPipeline:
 
             results = [self.runFoldWorker(*pool_args[0])]
             self.extractResults(results)
+        
+        self.load_scalers()
+        self.load_analyzers()
         return
 
 
@@ -298,7 +321,9 @@ class ClusterPipeline:
         self.clusterer = hdbscan.HDBSCAN(min_cluster_size=minsize, min_samples=minsamp, prediction_data=True)
         self.clusterer.fit(embeddings)
 
-        return scores
+        sample_idxs = correct_pred_labels[split_class].index
+
+        return scores, sample_idxs
         
 
     def predict_cluster(self, lrp_data, plot=False):
