@@ -191,8 +191,9 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
-    
     from sklearn.metrics import confusion_matrix
+    from sklearn.utils.multiclass import unique_labels
+    import numpy as np
     
     if not title:
         if normalize:
@@ -209,8 +210,9 @@ def plot_confusion_matrix(y_true, y_pred, classes,
         print("Normalized confusion matrix")
     else:
         print('Confusion matrix, without normalization')
-
-    print(cm)
+    
+    normed_mat = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    print(normed_mat)
 
     fig, ax = plt.subplots(figsize=[8,8])
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
@@ -237,7 +239,10 @@ def plot_confusion_matrix(y_true, y_pred, classes,
                     ha="center", va="center",
                     color="white" if cm[i, j] > thresh else "black")
     fig.tight_layout()
-    return ax
+    
+    print("Overall Accuracy: {:.4f}".format(np.trace(cm)/sum(cm.ravel())))
+    
+    return ax, cm
 
 
 def get1hot(y_train,y_test):
@@ -343,6 +348,7 @@ def plotSeparatedLRP(lrp):
         
         
 ####################### Custom Split Functions ############################
+
 def get_split_index(features, labels, test_size=0.1):
     import numpy as np
     from sklearn.model_selection import StratifiedShuffleSplit
@@ -353,7 +359,16 @@ def get_split_index(features, labels, test_size=0.1):
     split = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=42)
     return [[train_index, test_index] for train_index,test_index in split.split(features, labels)]
 
-def split_valid(features, original_labels, training_labels, valid_size=0.5):
+def split_valid(features, training_labels, valid_size=0.5):
+    train_index, validation_index = get_split_index(features, training_labels, test_size=valid_size)[0]
+    
+    X_valid, y_valid = features.iloc[validation_index], training_labels.iloc[validation_index]
+    X_train, y_train = features.iloc[train_index], training_labels.iloc[train_index]
+     
+    return X_train, y_train, X_valid, y_valid
+
+
+def split_valid_orig(features, original_labels, training_labels, valid_size=0.5):
     train_index, validation_index = get_split_index(features, original_labels, test_size=valid_size)[0]
     
     X_valid, y_valid, y_valid_original = features.iloc[validation_index], training_labels.iloc[validation_index], original_labels.iloc[validation_index]
