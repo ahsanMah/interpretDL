@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
+from helper import split_valid, plot_confusion_matrix
 from sklearn import metrics
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
@@ -267,7 +268,8 @@ class ClusterPipeline:
         print("Test Size:", len(self.testing_idxs))
         return
 
-    def train_model(self, batch_size=20, epochs=200, verbose=0, cross_validation=False, parallel=True):
+    def train_model(self, batch_size=20, epochs=200, verbose=0,
+                    cross_validation=False, parallel=False, print_cm=True):
         
         self.lrp_results = []
         self.correct_preds_bool_arr = []
@@ -277,6 +279,9 @@ class ClusterPipeline:
         if cross_validation:
             self.cross_validation(batch_size,epochs, parallel=parallel)
         else:
+            self.n_splits = 1
+            
+            
             X_train, y_train = self.train_set.features, self.train_set.labels
             pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) 
                         for fnum, (tr_idx, tst_idx) in enumerate(
@@ -286,9 +291,15 @@ class ClusterPipeline:
             results = [self.runFoldWorker(*pool_args[0])]
             self.extractResults(results)
         
+        if print_cm:
+            _, cm = plot_confusion_matrix(self.train_set.labels.iloc[self.testing_idxs],
+                                          np.array(self.predictions, dtype=int),
+                                          np.array(["Control", "Target"]))
+        
         self.load_scalers()
         self.load_analyzers()
-        return
+        
+        return cm
 
 
     def train_clusterer(self, class_label=None, min_cluster_sizes=[], plot=False):
@@ -423,6 +434,8 @@ class ClusterPipeline:
         return 
 
     def get_validation_lrp(self):
+        
+        if self.val_set_lrp: return self.val_set_lrp
        
         if not self.dnn_analyzers: self.load_analyzers()
         analyze = lambda idx,x: self.dnn_analyzers[idx].analyze(x.reshape(1,-1))
@@ -494,7 +507,7 @@ class ClusterPipeline:
 
         target_class_features = self.train_set.features.iloc[reindexer][correct_preds][target_samples]
         target_class_labels   = self.train_set.labels.iloc[reindexer][correct_preds][target_samples]
-        # target_class_features.head()
+        # print(target_class_features.shape)
 
         cluster_train = {}
 
@@ -503,21 +516,21 @@ class ClusterPipeline:
             tsamples = target_class_features[(self.clusterer.labels_ == cluster_label)]
             tlabels  = target_class_labels[(self.clusterer.labels_ == cluster_label)]
 
-
         #     csamples = self.train_set.features.iloc[reindexer][correct_preds][control_samples]
             csamples = self.train_set.features[self.train_set.labels != self.target_class]
             csamples = csamples[:len(tsamples)]
 
-            clabels = self.train_set.labels.iloc[reindexer][correct_preds][control_samples]
+            # clabels = self.train_set.labels.iloc[reindexer][correct_preds][control_samples]
+            clabels = self.train_set.labels[self.train_set.labels != self.target_class]
             clabels = clabels[:len(tsamples)]
 
             if reduce:
                 _clustered = pd.DataFrame(self.training_lrp[(self.clusterer.labels_ == cluster_label)],
                                         columns = self.train_set.features.columns)
                 
-            #     thresh = min(val_clustered.describe().loc["75%"])
-                thresh = _clustered.max().min()
-                # print(thresh)
+                thresh = _clustered.mean().quantile(0.5)
+                # thresh = _clustered.max().min()
+                print(thresh)
                 reduced_cols = self.get_relevant_cols(_clustered, thresh=thresh).columns
                 # print(reduced_cols)
                 
@@ -609,7 +622,7 @@ class ClusterPipeline:
 
         all_above_thresh = (df < thresh).all(0) #Check if all values in columns satisfy the criteria
         max_above_thresh = (df.max() < thresh)
-        quantile_above_thresh = (df.quantile(0.8) <= thresh)
+        quantile_above_thresh = (df.quantile(0.7) <= thresh)
 
         criteria = quantile_above_thresh
         irrelevant_cols = df.columns[criteria] 
