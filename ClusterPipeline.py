@@ -154,20 +154,29 @@ class ClusterPipeline:
         self.TRAINFILE = self.BASENAME + "_{id}_train.pickle"
 
 
-    def train(self, X, y, batch_size, epochs, X_test=[], y_test=[], verbose=0, foldnum=0):
+    def train(self, X, y, batch_size, epochs,
+              X_test=[], y_test=[], verbose=0, foldnum=0, smote=False):
         """
         Trains a model using keras API, after scaling the data
         """
         # from sklearn.preprocessing import StandardScaler
         from imblearn.over_sampling import SMOTE
+        from sklearn.utils.class_weight import compute_class_weight
+        
         self.model.load_weights(self.INITFILE)
 
         ZScaler = self.DataFrameScaler(self.numerical_cols).fit(X)
         X_train = ZScaler.transform(X)
-        X_train,y_train = SMOTE(random_state=RANDOM_STATE).fit_resample(X_train,np.ravel(y)) # Both are np arrays now
+        y_train = y
+        
+        if smote:
+            X_train,y_train = SMOTE(random_state=RANDOM_STATE).fit_resample(
+                              X_train,np.ravel(y)) # Both are np arrays now
+
+        class_weight = compute_class_weight("balanced", np.unique(y), y)
         y_train = self.hot_encoder.transform(y_train)
 
-        history = self.model.fit(X_train, y_train,
+        history = self.model.fit(X_train, y_train, class_weight=class_weight,
                         epochs=epochs, batch_size = batch_size, verbose=verbose)
         
         # Save states of training run
@@ -181,10 +190,12 @@ class ClusterPipeline:
 
         return history, ZScaler
 
-    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs, X_test=[], y_test=[], foldnum=0, verbose=0):
+    def runDNNAnalysis(self, X_train, y_train, batch_size, epochs,
+                       X_test=[], y_test=[], foldnum=0, verbose=0):
         # import keras
        
-        history, ZScaler = self.train(X_train, y_train, epochs=epochs, batch_size=batch_size, foldnum=foldnum, verbose=verbose)
+        history, ZScaler = self.train(X_train, y_train, epochs=epochs,
+                                      batch_size=batch_size, foldnum=foldnum, verbose=verbose)
         train_acc = [history.history["loss"][-1] , history.history["acc"][-1]]
         print("Fold: {} -> Loss:{:0.3f}, Acc:{:.4f}".format(foldnum, *train_acc))
 
@@ -384,7 +395,7 @@ class ClusterPipeline:
 
         # Populate zscalers if empty
         if not self.zscalers: self.load_scalers()
-        
+        # if predictions != None
         predictions = []
         DFScaler = self.DataFrameScaler(self.numerical_cols)
 
