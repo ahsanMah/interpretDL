@@ -110,7 +110,7 @@ class ClusterPipeline:
         self.model.save_weights(self.INITFILE)
         self.reducer_pipeline = Pipeline([
             ("umap", reducer),
-            ("scaler",  MinMaxScaler())
+            # ("scaler",  MinMaxScaler())
         ])
 
         self.train_set = self.Dataset(*train_set)
@@ -318,6 +318,8 @@ class ClusterPipeline:
         Expects a class label to cluster
         This should be the class that the user expects to have subclusters
         '''
+        import keras
+        import tensorflow as tf
 
         if None == class_label: class_label = self.target_class
 
@@ -325,7 +327,11 @@ class ClusterPipeline:
         split_class = correct_pred_labels == class_label
         split_class_lrp = np.array(self.lrp_results)[split_class]
 
-        self.training_lrp = np.clip(split_class_lrp, 0,None)
+        _lrp = np.clip(split_class_lrp, 0,None)
+        with tf.Session() as sess:
+            _lrp = sess.run(keras.backend.softmax(_lrp))
+        
+        self.training_lrp = np.array(_lrp)
         labels = correct_pred_labels[split_class]
         
         self.reducer_pipeline = self.reducer_pipeline.fit(self.training_lrp)
@@ -333,14 +339,19 @@ class ClusterPipeline:
 
         if not min_cluster_sizes:
             n_neighbours = self.reducer_pipeline["umap"].n_neighbors
-            min_cluster_sizes = range(n_neighbours-3, n_neighbours+3)
-
+            # min_cluster_sizes = range(n_neighbours-3, n_neighbours+3)
+            start = max(0, n_neighbours - int(.01*self.training_lrp.shape[0]))
+            end = int(.01*self.training_lrp.shape[0]) + n_neighbours
+            inc = int(max(1, 0.005*self.training_lrp.shape[0]))
+            min_cluster_sizes = range(start, end, inc)
+        
         scores = self.clusterPerf(embeddings, labels, min_cluster_sizes, plot)
         print("Minimum Size:")
         print(scores.idxmin())
         
         minsize, minsamp = scores["Halkidi-Filtered Noise"].idxmin()
-        self.clusterer = hdbscan.HDBSCAN(min_cluster_size=minsize, min_samples=minsamp, prediction_data=True)
+        self.clusterer = hdbscan.HDBSCAN(min_cluster_size=minsize,
+                                         min_samples=minsamp, prediction_data=True)
         self.clusterer.fit(embeddings)
 
         sample_idxs = correct_pred_labels[split_class].index
@@ -445,7 +456,9 @@ class ClusterPipeline:
         return 
 
     def get_validation_lrp(self):
-        
+        import keras
+        import tensorflow as tf
+
         if self.val_set_lrp: return self.val_set_lrp
        
         if not self.dnn_analyzers: self.load_analyzers()
@@ -461,7 +474,13 @@ class ClusterPipeline:
         for dnn_idx, sample in zip(class_DNN, class_samples):
             self.val_set_lrp.extend(analyze(dnn_idx,sample))
 
-        self.val_set_lrp = np.clip(self.val_set_lrp, 0, None)
+        # self.val_set_lrp = np.clip(self.val_set_lrp, 0, None)
+        
+        _lrp = np.clip(self.val_set_lrp, 0,None)
+        with tf.Session() as sess:
+            _lrp = sess.run(keras.backend.softmax(_lrp))
+        self.val_set_lrp = np.array(_lrp)
+
         return self.val_set_lrp
     
     def get_validation_clusters(self, plot=False):
