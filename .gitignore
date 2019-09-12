@@ -3,7 +3,7 @@
 .vscode
 models/
 pipeline_figs/
-IBIS/ASD/
+ASD/ASD/
 
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
