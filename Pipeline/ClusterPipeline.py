@@ -48,11 +48,12 @@ class ClusterPipeline:
         Since the function expects an array of "features" per sample,
         we reshape the values
         """
-        def __init__(self, random_state=42):
+        def __init__(self, random_state=42, one_hot=True):
             from sklearn.preprocessing import OneHotEncoder
             
             self.enc = OneHotEncoder(categories="auto", sparse=False)
             self.categories_ = None
+            self.one_hot = one_hot
             return None
         
         def fit(self, labels):
@@ -61,7 +62,12 @@ class ClusterPipeline:
             return self
         
         def transform(self, labels):
-            return self.enc.transform(np.array(labels).reshape(-1,1))
+            ordinal_labels = np.array(labels).reshape(-1,1)
+    
+            if not self.one_hot:
+                return ordinal_labels
+            
+            return self.enc.transform(ordinal_labels)        
 
     class DataFrameScaler(BaseEstimator, TransformerMixin):
         """
@@ -92,8 +98,9 @@ class ClusterPipeline:
     def __init__(self, model, train_set, val_set,
                 target_class=0,
                 reducer=umap.UMAP(random_state=42),
+                numerical_cols=None,
+                softmax=True,
                 analyzer_type="lrp.epsilon",
-                numerical_cols = None,
                 cluster_algo = "HDBSCAN",
                 linearClassifier="SVM"):
         """
@@ -110,17 +117,20 @@ class ClusterPipeline:
         self.model.save_weights(self.INITFILE)
         self.reducer_pipeline = Pipeline([
             ("umap", reducer),
-            # ("scaler",  MinMaxScaler())
+            ("scaler",  MinMaxScaler())
         ])
 
         self.train_set = self.Dataset(*train_set)
         self.val_set = self.Dataset(*val_set)
         self.target_class = target_class
         self.numerical_cols = numerical_cols if numerical_cols else self.train_set.features.columns
-
-
-        self.hot_encoder = self.dfHotEncoder()
+        self.softmax = softmax
+        
+        # Will produce one-hot encoding when softmax required
+        # Otherwise will just reshape array
+        self.hot_encoder = self.dfHotEncoder(one_hot=self.softmax)
         self.hot_encoder.fit(self.train_set.labels)
+
         self.history = None
         self.zscalers = {}
 
@@ -139,7 +149,10 @@ class ClusterPipeline:
 
     def setupDirPaths(self):
         ### Directory names for various files being stored ###
-        now = datetime.utcnow().strftime("%Y%m%d%H%M%S") 
+        now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        
+        ######## TODO: Create a models dir if doesn't exist #################
+        
         self.MODELDIR = "models/"+now+"/"
         os.mkdir(self.MODELDIR)
         
@@ -159,25 +172,25 @@ class ClusterPipeline:
         """
         Trains a model using keras API, after scaling the data
         """
-        # from sklearn.preprocessing import StandardScaler
+        from sklearn.preprocessing import StandardScaler
         from imblearn.over_sampling import SMOTE
         from sklearn.utils.class_weight import compute_class_weight
         
         self.model.load_weights(self.INITFILE)
-
         ZScaler = self.DataFrameScaler(self.numerical_cols).fit(X)
         X_train = ZScaler.transform(X)
-        y_train = y
-        
-        if smote:
-            X_train,y_train = SMOTE(random_state=RANDOM_STATE).fit_resample(
-                              X_train,np.ravel(y)) # Both are np arrays now
 
+        if smote:
+            X_train,y = SMOTE(random_state=RANDOM_STATE).fit_resample(
+                              X,np.ravel(y)) # Both are np arrays now
+            X_train = StandardScaler().fit(X).transform(X_train)
+
+        y_train = self.hot_encoder.transform(y)
+        
         class_weight = compute_class_weight("balanced", np.unique(y), y)
-        y_train = self.hot_encoder.transform(y_train)
 
         history = self.model.fit(X_train, y_train, class_weight=class_weight,
-                        epochs=epochs, batch_size = batch_size, verbose=verbose)
+                        epochs=epochs, batch_size=batch_size, verbose=verbose)
         
         # Save states of training run
         self.model.save_weights(self.MODELFILE.format(id=foldnum))
@@ -222,8 +235,10 @@ class ClusterPipeline:
             "lrp.epsilon":
                 {"epsilon":1e-3}
          }
-
-        model_wo_softmax = iutils.keras.graph.model_wo_softmax(model)
+        
+        model_wo_softmax = model
+        if self.softmax:
+            model_wo_softmax = iutils.keras.graph.model_wo_softmax(model)
 
         analyzer = innvestigate.create_analyzer(self.analyzer_type, model_wo_softmax,
                                                 **analyzer_kwargs[self.analyzer_type])
@@ -291,12 +306,11 @@ class ClusterPipeline:
             self.cross_validation(batch_size,epochs, parallel=parallel)
         else:
             self.n_splits = 1
-            
-            
+        
             X_train, y_train = self.train_set.features, self.train_set.labels
             pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) 
                         for fnum, (tr_idx, tst_idx) in enumerate(
-                                self.get_split_index(features=X_train, labels=y_train)
+                                self.get_split_index(features=X_train, labels=y_train, test_size=0.1)
                         )]
 
             results = [self.runFoldWorker(*pool_args[0])]
@@ -333,17 +347,17 @@ class ClusterPipeline:
         
         self.training_lrp = np.array(_lrp)
         labels = correct_pred_labels[split_class]
-        
+        print("LRP Shape: ", self.training_lrp.shape)
         self.reducer_pipeline = self.reducer_pipeline.fit(self.training_lrp)
         embeddings = self.reducer_pipeline.transform(self.training_lrp)
 
         if not min_cluster_sizes:
             n_neighbours = self.reducer_pipeline["umap"].n_neighbors
-            # min_cluster_sizes = range(n_neighbours-3, n_neighbours+3)
-            start = max(0, n_neighbours - int(.01*self.training_lrp.shape[0]))
-            end = int(.01*self.training_lrp.shape[0]) + n_neighbours
-            inc = int(max(1, 0.005*self.training_lrp.shape[0]))
-            min_cluster_sizes = range(start, end, inc)
+            min_cluster_sizes = range(n_neighbours-3, n_neighbours+3)
+            # start = max(0, n_neighbours - int(.01*self.training_lrp.shape[0]))
+            # end = int(.01*self.training_lrp.shape[0]) + n_neighbours
+            # inc = int(max(1, 0.005*self.training_lrp.shape[0]))
+            # min_cluster_sizes = range(start, end, inc)
         print("Cluster Search Space:", min_cluster_sizes)
         scores = self.clusterPerf(embeddings, labels, min_cluster_sizes, plot)
         print("Minimum Size:")
@@ -415,7 +429,14 @@ class ClusterPipeline:
         for i,zscaler in enumerate(self.zscalers):  
             DFScaler.scaler = zscaler
             _samples = DFScaler.transform(self.val_set.features)
-            model_preds = np.array([(np.argmax(x), np.max(x)) for x in self.foldmodel(i).predict(_samples)])
+
+            # Lambda function that returns (prediction, probability) pairs
+            if self.softmax:
+                selector = lambda x: (np.argmax(x), np.max(x))
+            else:
+                selector = lambda x : (int(np.round(x[0])), x[0])
+            
+            model_preds = np.array([ selector(x) for x in self.foldmodel(i).predict(_samples)])
             incorrect = model_preds[:,0] != self.val_set.labels
             model_preds[incorrect] = -1
             predictions.append(model_preds)
@@ -423,11 +444,11 @@ class ClusterPipeline:
         # Combine all DNN predictions into a matrix
         predictions = np.stack(predictions, axis=1)
         
-        # Samples with at least one correct predicition
+        # Samples with at least one correct prediction
         # Note: Samples incorrectly predicted by all DNNs are dropped
         self.val_pred_mask =  (predictions[:,:,0] > -1).any(axis=1)
         predictions = predictions[self.val_pred_mask]
-
+        
         print("Prediction Accuracy: {:.4f}".format(predictions.shape[0]/self.val_set.labels.shape[0]))
 
         # The DNN number with the highest confidence
@@ -636,13 +657,20 @@ class ClusterPipeline:
         if ZScaler: samples = ZScaler.transform(samples)
 
         predictions = model.predict(samples)
-        preds = np.array([np.argmax(x) for x in predictions])
+        
+        if self.softmax:
+            selector = lambda x: np.argmax(x)
+        else:
+            selector = lambda x: np.round(x[0])
+        
+        preds = np.array([selector(x) for x in predictions])
         true_labels = np.array([x for x in labels])
 
         correct_idxs = preds == true_labels
 
-        print("Prediction Accuracy") 
+        print("Prediction Accuracy")
         labels = self.hot_encoder.transform(labels)
+        # print("Labels", labels)
         loss_and_metrics = model.evaluate(samples, labels)
         print("Scores on data set: loss={:0.3f} accuracy={:.4f}".format(*loss_and_metrics))
         
