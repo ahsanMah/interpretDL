@@ -273,8 +273,8 @@ def plot_history(history):
 
     # Plot training & validation accuracy values
     axs[0].grid(True)
-    axs[0].plot(history.history['acc'])
-    axs[0].plot(history.history['val_acc'])
+    axs[0].plot(history.history['accuracy'])
+    axs[0].plot(history.history['val_accuracy'])
     axs[0].set(title='Model accuracy', ylabel='Accuracy', xlabel='Epoch')
     axs[0].legend(['Train', 'Test'], loc='upper left')
 
