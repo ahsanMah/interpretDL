@@ -345,7 +345,66 @@ def plotSeparatedLRP(lrp):
         group.plot(ax=axs[grid_pos[key]],kind="scatter",x=0,y=1, title=key,
                    color=color_key[key], xlim = (x_min,x_max), ylim=(y_min,y_max), grid=True)
 
+def plot_3d_lrp(lrp, colors=[], labels=[], notebook=True):
+    
+    import plotly as py
+    import plotly.graph_objs as go
+    from plotly.offline import iplot
+    from plotly.offline import plot
+    import ipywidgets as widgets
+    
+    if lrp.shape[1] > 3:
         
+        import umap
+        from sklearn.preprocessing import MinMaxScaler 
+        
+        embedding_pipeline = Pipeline([
+            ("reducer", umap.UMAP(random_state=42,
+                            n_components = 3,
+                            min_dist=0)),
+#            ("scaler", MinMaxScaler())
+        ])
+        embedding_pipeline.fit(lrp)
+        embedding = embedding_pipeline.transform(lrp)
+    else:
+        embedding = lrp
+            
+
+    emb3d = go.Scatter3d(
+        x=embedding[:,0],
+        y=embedding[:,1],
+        z=embedding[:,2],
+        mode="markers",
+        name="Training",
+        marker=dict(
+            size=5,
+            color=colors,
+            colorscale="Rainbow",
+            opacity=0.8,
+            showscale=True
+        ),
+        text=labels
+    )
+
+    layout = go.Layout(
+        title="3D LRP Embedding",
+        autosize=False,
+        width=1200,
+        height=1000,
+        paper_bgcolor='#F5F5F5',
+    #     template="plotly"
+    )
+
+    data=[emb3d]
+
+    fig = go.Figure(data=data, layout=layout)
+    # fig.update_layout(template="plotly")  /
+    
+    if notebook:
+        py.offline.init_notebook_mode(connected=True)
+        iplot(fig, filename='lrp-3d-scatter.html')
+    else:
+        plot(fig, filename='lrp-3d-scatter.html')
         
 ####################### Custom Split Functions ############################
 
