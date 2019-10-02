@@ -84,17 +84,6 @@ class ClusterPipeline:
             scaled_cols = self.scaler.transform(X[self.attribute_names])
             return np.concatenate((scaled_cols, cat_cols), axis=1)
 
-    # MODELDIR = "models/"
-    # FIGUREDIR = "pipeline_figs/"
-    # INITFILE = MODELDIR+"init.h5"
-    # BASENAME = MODELDIR+"dnn"
-
-    # # Filenames for storing / caching model params
-    # MODELFILE  = BASENAME + "_{id}.h5"
-    # SCALERFILE = BASENAME + "_{id}_zscaler.pickle"
-    # ANALYZERFILE = BASENAME + "_{id}_analyzer.pickle"
-    # TRAINFILE = BASENAME + "_{id}_train.pickle"
-
     def __init__(self, model, train_set, val_set,
                 target_class=0,
                 reducer=umap.UMAP(random_state=42),
@@ -149,12 +138,11 @@ class ClusterPipeline:
 
     def setupDirPaths(self):
         ### Directory names for various files being stored ###
-        now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        
-        ######## TODO: Create a models dir if doesn't exist #################
+        now = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
         
         self.MODELDIR = "models/"+now+"/"
         os.mkdir(self.MODELDIR)
+        os.mkdir(self.MODELDIR+"tb_logs/")
         
         self.FIGUREDIR = self.MODELDIR+"pipeline_figs/"
         self.INITFILE = self.MODELDIR+"init.h5"
@@ -175,7 +163,11 @@ class ClusterPipeline:
         from sklearn.preprocessing import StandardScaler
         from imblearn.over_sampling import SMOTE
         from sklearn.utils.class_weight import compute_class_weight
-        
+        from tensorflow.keras.callbacks import TensorBoard
+
+        tensorboard = TensorBoard(log_dir='./{}/tb_logs/{}'.format(self.MODELDIR,foldnum),
+                          update_freq="epoch", write_graph=False)
+
         self.model.load_weights(self.INITFILE)
         ZScaler = self.DataFrameScaler(self.numerical_cols).fit(X)
         X_train = ZScaler.transform(X)
@@ -190,7 +182,7 @@ class ClusterPipeline:
         class_weight = compute_class_weight("balanced", np.unique(y), y)
 
         history = self.model.fit(X_train, y_train, class_weight=class_weight,
-                        epochs=epochs, batch_size=batch_size, verbose=verbose)
+                        epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[tensorboard])
         
         # Save states of training run
         self.model.save_weights(self.MODELFILE.format(id=foldnum))
@@ -342,6 +334,7 @@ class ClusterPipeline:
         split_class_lrp = np.array(self.lrp_results)[split_class]
 
         _lrp = np.clip(split_class_lrp, 0,None)
+        # _lrp = split_class_lrp
 #         with tf.Session() as sess:
 #             _lrp = sess.run(keras.backend.softmax(_lrp))
         
