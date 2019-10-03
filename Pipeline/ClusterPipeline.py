@@ -114,6 +114,7 @@ class ClusterPipeline:
         self.target_class = target_class
         self.numerical_cols = numerical_cols if numerical_cols else self.train_set.features.columns
         self.softmax = softmax
+        self.use_smote = False
         
         # Will produce one-hot encoding when softmax required
         # Otherwise will just reshape array
@@ -156,7 +157,7 @@ class ClusterPipeline:
 
 
     def train(self, X, y, batch_size, epochs,
-              X_test=[], y_test=[], verbose=0, foldnum=0, smote=False):
+              X_test=[], y_test=[], verbose=0, foldnum=0):
         """
         Trains a model using keras API, after scaling the data
         """
@@ -172,8 +173,8 @@ class ClusterPipeline:
         ZScaler = self.DataFrameScaler(self.numerical_cols).fit(X)
         X_train = ZScaler.transform(X)
 
-        if smote:
-            X_train,y = SMOTE(random_state=RANDOM_STATE).fit_resample(
+        if self.use_smote:
+            X_train,y = SMOTE(random_state=RANDOM_STATE, k_neighbors=3).fit_resample(
                               X,np.ravel(y)) # Both are np arrays now
             X_train = StandardScaler().fit(X).transform(X_train)
 
@@ -287,12 +288,13 @@ class ClusterPipeline:
         return
 
     def train_model(self, batch_size=20, epochs=200, verbose=0,
-                    cross_validation=False, parallel=False, print_cm=True):
+                    cross_validation=False, parallel=False, print_cm=True, smote=False):
         
         self.lrp_results = []
         self.correct_preds_bool_arr = []
         self.predictions = []
         self.testing_idxs = []
+        self.use_smote = smote
 
         if cross_validation:
             self.cross_validation(batch_size,epochs, parallel=parallel)
@@ -300,7 +302,7 @@ class ClusterPipeline:
             self.n_splits = 1
         
             X_train, y_train = self.train_set.features, self.train_set.labels
-            pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs) 
+            pool_args = [(fnum, tr_idx, tst_idx, batch_size, epochs)
                         for fnum, (tr_idx, tst_idx) in enumerate(
                                 self.get_split_index(features=X_train, labels=y_train, test_size=0.1)
                         )]
@@ -319,7 +321,7 @@ class ClusterPipeline:
         return cm
 
 
-    def train_clusterer(self, class_label=None, min_cluster_sizes=[], plot=False):
+    def train_clusterer(self, class_label=None, min_cluster_sizes=[], plot=False, clip=True):
         '''
         Expects a class label to cluster
         This should be the class that the user expects to have subclusters
@@ -333,8 +335,9 @@ class ClusterPipeline:
         split_class = correct_pred_labels == class_label
         split_class_lrp = np.array(self.lrp_results)[split_class]
 
-        _lrp = np.clip(split_class_lrp, 0,None)
-        # _lrp = split_class_lrp
+        _lrp = split_class_lrp
+        if clip: _lrp = np.clip(split_class_lrp, 0,None)
+
 #         with tf.Session() as sess:
 #             _lrp = sess.run(keras.backend.softmax(_lrp))
         
