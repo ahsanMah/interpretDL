@@ -245,6 +245,7 @@ class ClusterPipeline:
         y_train = self.train_set.labels.iloc[train_index]
         X_test  = self.train_set.features.iloc[test_index]
         y_test = self.train_set.labels.iloc[test_index]
+
         predictions, lrp_results, correct_pred_idxs = self.runDNNAnalysis(X_train, y_train, X_test=X_test, y_test=y_test,
                                                     epochs=epochs, batch_size=batch_size, foldnum=foldnum)
 

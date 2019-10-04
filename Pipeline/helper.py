@@ -195,6 +195,9 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     from sklearn.utils.multiclass import unique_labels
     import numpy as np
     
+    y_true = np.ravel(y_true)
+    y_pred = np.ravel(y_pred)
+
     if not title:
         if normalize:
             title = 'Normalized confusion matrix'
@@ -273,8 +276,8 @@ def plot_history(history):
 
     # Plot training & validation accuracy values
     axs[0].grid(True)
-    axs[0].plot(history.history['accuracy'])
-    axs[0].plot(history.history['val_accuracy'])
+    axs[0].plot(history.history['acc'])
+    axs[0].plot(history.history['val_acc'])
     axs[0].set(title='Model accuracy', ylabel='Accuracy', xlabel='Epoch')
     axs[0].legend(['Train', 'Test'], loc='upper left')
 
@@ -361,8 +364,9 @@ def plot_3d_lrp(lrp, colors=[], labels=[], notebook=True):
         embedding_pipeline = Pipeline([
             ("reducer", umap.UMAP(random_state=42,
                             n_components = 3,
+                            n_neighbors=10,
                             min_dist=0)),
-#            ("scaler", MinMaxScaler())
+           ("scaler", MinMaxScaler())
         ])
         embedding_pipeline.fit(lrp)
         embedding = embedding_pipeline.transform(lrp)
