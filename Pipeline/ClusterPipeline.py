@@ -163,6 +163,7 @@ class ClusterPipeline:
         """
         from sklearn.preprocessing import StandardScaler
         from imblearn.over_sampling import SMOTE
+        from imblearn.over_sampling import BorderlineSMOTE
         from sklearn.utils.class_weight import compute_class_weight
         from tensorflow.keras.callbacks import TensorBoard
 
@@ -171,16 +172,19 @@ class ClusterPipeline:
 
         self.model.load_weights(self.INITFILE)
         ZScaler = self.DataFrameScaler(self.numerical_cols).fit(X)
-        X_train = ZScaler.transform(X)
+
+        class_weight = compute_class_weight("balanced", np.unique(y), y)
 
         if self.use_smote:
-            X_train,y = SMOTE(random_state=RANDOM_STATE, k_neighbors=3).fit_resample(
+            X_train,y = BorderlineSMOTE(random_state=RANDOM_STATE, k_neighbors=3).fit_resample(
                               X,np.ravel(y)) # Both are np arrays now
             X_train = StandardScaler().fit(X).transform(X_train)
+        else:
+            X_train = ZScaler.transform(X)
+
 
         y_train = self.hot_encoder.transform(y)
         
-        class_weight = compute_class_weight("balanced", np.unique(y), y)
 
         history = self.model.fit(X_train, y_train, class_weight=class_weight,
                         epochs=epochs, batch_size=batch_size, verbose=verbose, callbacks=[tensorboard])
