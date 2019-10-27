@@ -23,7 +23,7 @@ np.random.seed(seed=RANDOM_STATE)
 
 
 
-def build_dnn(input_dim=333, nodes=(150,25), activation="elu",
+def build_dnn(input_dim, nodes=(150,25), activation="elu",
               dropout_rate=(0.0,0.0,0.0), learning_rate = 0.001, reg_scale=0.01,
               momentum=0.0, nesterov=False):
     
@@ -34,7 +34,7 @@ def build_dnn(input_dim=333, nodes=(150,25), activation="elu",
     keras.backend.clear_session()
     
     tf.random.set_random_seed(RANDOM_STATE)
-    my_reg = regularizers.l1(reg_scale) # Can change this if needed
+    my_reg = regularizers.l2(reg_scale) # Can change this if needed
     
     dnn = keras.models.Sequential()
 
@@ -44,10 +44,10 @@ def build_dnn(input_dim=333, nodes=(150,25), activation="elu",
     he_init = keras.initializers.he_normal(seed=RANDOM_STATE)
     dnn.add(keras.layers.Dropout(rate=dropout_rate[0], input_shape=(input_dim,)))
     dnn.add(Dense(units = nodes[0], activation=activation,
-                  kernel_initializer=he_init, kernel_regularizer = regularizers.l1(reg_scale)))
+                  kernel_initializer=he_init, kernel_regularizer = my_reg))
     dnn.add(keras.layers.Dropout(dropout_rate[1]))
     dnn.add(Dense(units = nodes[1], activation=activation,
-                  kernel_initializer=he_init, kernel_regularizer = regularizers.l1(reg_scale)))
+                  kernel_initializer=he_init, kernel_regularizer = my_reg))
     dnn.add(keras.layers.Dropout(dropout_rate[2]))
     
     dnn.add(Dense(units=1, activation="sigmoid",
@@ -61,7 +61,7 @@ def build_dnn(input_dim=333, nodes=(150,25), activation="elu",
     
     return dnn
 
-fname = "data/hr_lr.csv"
+fname = "data/asd_lr_csf_sa.csv"
 raw_data = pd.read_csv(fname, index_col=0).values
 X = raw_data[:, :-1]
 Y = raw_data[:,-1].reshape(-1,1)
@@ -88,13 +88,24 @@ scoring={"acc":"accuracy","prec": prec_scorer}
 # create model
 model = KerasClassifier(build_fn=build_dnn, verbose=0)
 # define the grid search parameters
-batch_size = [20]
-num_nodes = [(100,100)]
-epochs = [x for x in range(200,400,100)]
-class_weights = [compute_class_weight("balanced", np.unique(np.ravel(Y)), np.ravel(Y))]
-rates = [(0,0,0),(0,0.2,0.2)]
+### USE NESTEROV FOR L2 NORMMMMMM PLSLSLSLS
 
-param_grid = dict(batch_size=batch_size, epochs=epochs, nodes=num_nodes, class_weight=class_weights, dropout_rate=rates)
+
+# batch_size = [int(0.9 * X.shape[0])]
+batch_size = [10]
+num_nodes = [(32,32), (128,128), (200,200), (256,256)]
+epochs = [100, 200, 500, 1000]
+class_weights = [compute_class_weight("balanced", np.unique(np.ravel(Y)), np.ravel(Y))]
+rates = [(0,0.2,0.2), (0,0.5,0.5)]
+scales=[0.01]
+learning_rates=[0.001]
+momentums=[0.9]
+nesterovs=[True]
+
+param_grid = dict(input_dim=[X.shape[1]], batch_size=batch_size, epochs=epochs, nodes=num_nodes, activation=["relu"],
+                  class_weight=class_weights, dropout_rate=rates, reg_scale=scales,
+                  learning_rate=learning_rates, momentum=momentums, nesterov=nesterovs
+                 )
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=4,
                     cv=splitter, scoring=scoring, refit="prec", verbose=1)
 print(grid)
@@ -113,4 +124,4 @@ print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 
 
 results = pd.DataFrame(grid_result.cv_results_)
-results.to_csv("gs_exp_2_nodes.csv")
+results.to_csv("gs_csf_sa.csv")
