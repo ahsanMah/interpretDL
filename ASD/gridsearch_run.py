@@ -11,6 +11,7 @@ from sklearn.utils.class_weight import compute_class_weight
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import precision_score, make_scorer
 from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import Pipeline
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -61,12 +62,12 @@ def build_dnn(input_dim, nodes=(150,25), activation="elu",
     
     return dnn
 
-fname = "data/asd_lr_csf_sa.csv"
+fname = "data/asd_lr_csf.csv"
 raw_data = pd.read_csv(fname, index_col=0).values
 X = raw_data[:, :-1]
 Y = raw_data[:,-1].reshape(-1,1)
-ZScaler = StandardScaler().fit(X)
-X = ZScaler.transform(X)
+# ZScaler = StandardScaler().fit(X)
+# X = ZScaler.transform(X)
 
 # ## Architecture Search
 
@@ -87,26 +88,37 @@ scoring={"acc":"accuracy","prec": prec_scorer}
 
 # create model
 model = KerasClassifier(build_fn=build_dnn, verbose=0)
-# define the grid search parameters
-### USE NESTEROV FOR L2 NORMMMMMM PLSLSLSLS
 
+# make pipeline
+zscaler = StandardScaler()
+pipeline = Pipeline([("scaler",zscaler),
+                     ("dnn", model)])
+
+# define the grid search parameters
 
 # batch_size = [int(0.9 * X.shape[0])]
 batch_size = [10]
-num_nodes = [(32,32), (128,128), (200,200), (256,256)]
+num_nodes = [(32,32), (64,64), (16,16)]
 epochs = [100, 200, 500, 1000]
 class_weights = [compute_class_weight("balanced", np.unique(np.ravel(Y)), np.ravel(Y))]
 rates = [(0,0.2,0.2), (0,0.5,0.5)]
 scales=[0.01]
-learning_rates=[0.001]
+learning_rates=[0.001, 0.0001]
 momentums=[0.9]
 nesterovs=[True]
 
-param_grid = dict(input_dim=[X.shape[1]], batch_size=batch_size, epochs=epochs, nodes=num_nodes, activation=["relu"],
+dnn_grid = dict(input_dim=[X.shape[1]], batch_size=batch_size, epochs=epochs, nodes=num_nodes, activation=["relu"],
                   class_weight=class_weights, dropout_rate=rates, reg_scale=scales,
                   learning_rate=learning_rates, momentum=momentums, nesterov=nesterovs
                  )
-grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=4,
+
+param_grid = {}
+
+for param,val in dnn_grid.items():
+    param_grid["dnn__"+str(param)] = val
+print(param_grid)
+
+grid = GridSearchCV(estimator=pipeline, param_grid=param_grid, n_jobs=4,
                     cv=splitter, scoring=scoring, refit="prec", verbose=1)
 print(grid)
 
@@ -124,4 +136,4 @@ print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
 
 
 results = pd.DataFrame(grid_result.cv_results_)
-results.to_csv("gs_csf_sa.csv")
+results.to_csv("gs_test.csv")
