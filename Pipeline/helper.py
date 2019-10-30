@@ -364,7 +364,7 @@ def plot_3d_lrp(lrp, colors=[], labels=[], notebook=True):
         embedding_pipeline = Pipeline([
             ("reducer", umap.UMAP(random_state=42,
                             n_components = 3,
-                            n_neighbors=10,
+                            n_neighbors=5,
                             min_dist=0)),
            ("scaler", MinMaxScaler())
         ])

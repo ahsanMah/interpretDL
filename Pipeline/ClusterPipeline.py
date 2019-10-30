@@ -354,7 +354,8 @@ class ClusterPipeline:
 
         if not min_cluster_sizes:
             n_neighbours = self.reducer_pipeline["umap"].n_neighbors
-            min_cluster_sizes = range(n_neighbours-3, n_neighbours+3)
+#             min_cluster_sizes = range(n_neighbours-3, n_neighbours+3)
+            min_cluster_sizes = range(3, n_neighbours+3)
             # start = max(0, n_neighbours - int(.01*self.training_lrp.shape[0]))
             # end = int(.01*self.training_lrp.shape[0]) + n_neighbours
             # inc = int(max(1, 0.005*self.training_lrp.shape[0]))
